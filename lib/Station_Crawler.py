@@ -23,7 +23,7 @@ class Station_Crawler:
 		return js_str
 
 	def parse_json(self):
-		regex_match = re.search('var stList = (\{.*?\});', self.js_str)
+		regex_match = re.search(r'var stList = (\{.*?\});', self.js_str)
 		# 去除多餘的 space
 		json_str = re.sub(' ', '', regex_match.group(1))
 		data = json.loads(json_str)
