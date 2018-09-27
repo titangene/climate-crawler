@@ -37,7 +37,7 @@ class Station_Crawler:
 			# e.g. '467780': ['七股', 'QIGU', '臺南市', '2']
 			# 資料內的最後一個參數 "2" 代表此觀測站已撤銷，因此不紀錄此觀測站
 			if (cancellation_station == '2'):
-					continue
+				continue
 			station_id = key
 			station_name = value[0]
 			location = value[2]
