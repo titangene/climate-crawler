@@ -14,13 +14,8 @@ def main():
 
 	mssql_host_ip = '192.168.191.130:1433'
 	DB_name = 'Test_DB'
-
 	to_sql = csv_to_mssql(host_ip=mssql_host_ip, DB_name=DB_name)
-	daily_climate_to_sql = to_sql.deal_with_dilay_data(table_name='Dilay_Climate_data', csv_name='daily_climate_data.csv')
-	print(daily_climate_to_sql)
-
-	hourly_climate_to_sql = to_sql.deal_with_hourly_data(table_name='Hourly_Climate_data', csv_name='hourly_climate_data.csv')
-	print(hourly_climate_to_sql)
+	to_sql.deal_with_daily_and_hourly_data()
 
 if __name__ == '__main__':
 	main()
