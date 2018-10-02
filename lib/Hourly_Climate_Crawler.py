@@ -23,7 +23,6 @@ class Hourly_Climate_Crawler:
 					break
 
 				station_area = self.climate_station.get_station_area(station_id)
-				temp_df['Day'] = period
 				temp_df['Reporttime'] = period + ' ' + temp_df['Hour'] + ':00'
 				temp_df['Area'] = station_area
 				temp_df['UUID'] = period + '_' + temp_df['Hour'] + '_' + temp_df['Area']

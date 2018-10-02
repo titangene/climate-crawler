@@ -23,7 +23,6 @@ class Daily_Climate_Crawler:
 					break
 
 				station_area = self.climate_station.get_station_area(station_id)
-				temp_df['Month'] = period
 				temp_df['Reporttime'] = period + '-' + temp_df['Day']
 				temp_df['Area'] = station_area
 				temp_df['UUID'] = temp_df['Reporttime'] + '_' + temp_df['Area']
