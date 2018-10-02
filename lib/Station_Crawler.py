@@ -9,25 +9,30 @@ class Station_Crawler:
 	def start(self):
 		url = 'https://e-service.cwb.gov.tw/HistoryDataQuery/QueryDataController.do?command=viewMain'
 		req = requests.get(url)
-		self.soup = BeautifulSoup(req.text, 'html.parser')
-		self.js_str = self.parse_js()
-		data = self.parse_json()
-		climate_station_dict = self.data_to_dict(data)
+		soup = BeautifulSoup(req.text, 'html.parser')
+
+		js_str = soup.find_all("script")[-1].string
+		js_str = self.parse_js(js_str)
+
+		json_data = self.parse_json(js_str)
+		climate_station_dict = self.data_to_dict(json_data)
 		self.climate_station_df = self.data_to_dataFrame(climate_station_dict)
 		self.save_data_to_csv()
 
-	def parse_js(self):
-		js_str = self.soup.find_all("script")[-1].string
+	def parse_js(self, js_str):
+		# 去除多餘的換行和 tab
 		js_str = re.sub('[\t\r\n]', '', js_str)
+		# 將一些觀測站名稱的 `&#039` 換成 `'` (單引號)
 		js_str = re.sub('&#039', '\'', js_str)
 		return js_str
 
-	def parse_json(self):
-		regex_match = re.search(r'var stList = (\{.*?\});', self.js_str)
+	def parse_json(self, js_str):
+		regex_match = re.search(r'var stList = (\{.*?\});', js_str)
+		json_str = regex_match.group(1)
 		# 去除多餘的 space
-		json_str = re.sub(' ', '', regex_match.group(1))
-		data = json.loads(json_str)
-		return data
+		json_str = re.sub(' ', '', json_str)
+		json_data = json.loads(json_str)
+		return json_data
 
 	def data_to_dict(self, data):
 		climate_station_dict = {'station_id': [], 'station_name': [], 'location': []}
