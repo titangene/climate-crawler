@@ -29,6 +29,9 @@ class csv_to_mssql:
 		dataSet = pd.read_csv(doc_name)
 		return dataSet
 
+	def disconnect(self):
+		self.engine.dispose()
+
 	# 處理 日 氣候資料
 	def deal_with_daily_data(self, table_name, csv_name, if_exists='append'):
 		dataSet = self.load_csv(csv_name)
