@@ -1,21 +1,28 @@
-import sqlalchemy as sqlc
+from sqlalchemy import create_engine
 import pandas as pd
+import numpy as np
 
 class csv_to_mssql:
-	def __init__(self, host_ip, DB_name):
-		self.host_ip = host_ip
-		self.DB_name = DB_name
+	def __init__(self):
+		self.host_ip, self.db_name = self.set_db_config()
 		self.user_id = 'SA' # 預設使用者為 SA
 		self.pwd = 'taipower@2018'  # 預設使用者密碼
 
 		self.engine = self.create_engine()
 
+	# return: host_ip, user_id
+	# e.g. host_ip = '192.168.191.130:1433', user_id = 'Test_DB'
+	def set_db_config(self):
+		db_config_file_path = 'lib/db/db_config.csv'
+		db_config = pd.read_csv(db_config_file_path)
+		return list(db_config.iloc[0])
+
 	def set_sql_url(self):
-		return 'mssql+pyodbc://{}:{}@{}/{}?driver=SQL+Server'.format(self.user_id, self.pwd, self.host_ip, self.DB_name)
+		return 'mssql+pyodbc://{}:{}@{}/{}?driver=SQL+Server'.format(self.user_id, self.pwd, self.host_ip, self.db_name)
 
 	def create_engine(self):
 		url = self.set_sql_url()
-		return sqlc.create_engine(url, connect_args={'charset':'utf-8'})
+		return create_engine(url)
 
 	def load_csv(self, csv_name):
 		doc_name = 'data/'+ csv_name
