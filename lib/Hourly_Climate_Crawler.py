@@ -8,6 +8,7 @@ class Hourly_Climate_Crawler:
 	def __init__(self):
 		self.climate_station = Climate_Station()
 		self.all_station_id = self.climate_station.all_station_id
+		self.reserved_columns = ['Temperature', 'Humidity', 'SunShine_hr', 'SunShine_MJ']
 
 	def obtain_hourly_data(self, start_period, end_period):
 		print('--------- hourly climate crawler: Start ---------')
@@ -17,7 +18,7 @@ class Hourly_Climate_Crawler:
 		for period in periods:
 			for station_id in self.all_station_id:
 				daily_climate_url = self.climate_station.get_hourly_full_url(period, station_id)
-				temp_df = self.catach_climate_data(daily_climate_url)
+				temp_df = self.catch_climate_data(daily_climate_url)
 				# 如果沒有任何資料就不儲存
 				if temp_df is None:
 					break
@@ -29,7 +30,7 @@ class Hourly_Climate_Crawler:
 				temp_df.drop(['Hour'], axis=1, inplace=True)
 
 				# 將欄位重新排序成 DB 的欄位順序
-				new_index = ['UUID', 'Area', 'Temperature', 'Humidity', 'Day', 'Reporttime']
+				new_index = ['UUID', 'Area'] + self.reserved_columns + ['Reporttime']
 				temp_df = temp_df.reindex(new_index, axis=1)
 
 				return_df = pd.concat([return_df, temp_df], ignore_index=True)
@@ -39,23 +40,21 @@ class Hourly_Climate_Crawler:
 		print('--------- hourly climate crawler: End ---------')
 		return return_df
 
-	def catach_climate_data(self, url):
-		climate_table = pd.read_html(url, encoding=str)
-		climate_df = climate_table[1]
-		climate_df.rename(columns={
-			climate_df.columns[0]: 'Hour',
-			climate_df.columns[3]: 'Temperature',
-			climate_df.columns[5]: 'Humidity'
-		}, inplace=True)
-		# 刪除列
-		climate_df.drop([0, 1, 2], inplace=True)
-		# 刪除排
-		df_drop_index = [1, 2 ,4] + list(range(6, 17))
-		climate_df.drop(df_drop_index, axis=1, inplace=True)
+	def catch_climate_data(self, url):
+		# 保留欄位德 index
+		reserved_columns_index = [0, 3, 5, 12, 13]
+		# return: {0: 'Day', 3: 'Temperature', 5: 'Humidity', ... }
+		rename_columns = dict(zip(reserved_columns_index, ['Hour'] + self.reserved_columns))
+
+		# iloc[3:, reserved_columns_index] 中的 '3:' 是刪除前 3 列 (index: 0 ~ 2)
+		# 將資料內的 '/' 設為 NA
+		# 只要 subset 這些欄位全部都 NA 才 drop
+		climate_table = pd.read_html(url, attrs={'id': 'MyTable'}, encoding=str)[0]
+		climate_df = climate_table.iloc[3:, reserved_columns_index]\
+								  .rename(columns=rename_columns)\
+								  .replace('/', np.nan)\
+								  .dropna(subset=self.reserved_columns, how='all')
 		# 將 Hour 欄位原本的 1 ~ 24 改成 '00' ~ '23'
 		climate_df['Hour'] = list(map(lambda hour: str(hour).zfill(2), range(0, 24)))
-		# 將 '/' 設為 NA
-		climate_df.replace('/', np.nan, inplace=True)
-		# 只要 subset 這些欄位全部都 NA 就 drop
-		climate_df.dropna(subset=['Temperature', 'Humidity'], how='all', inplace=True)
+
 		return climate_df if not climate_df.empty else None
