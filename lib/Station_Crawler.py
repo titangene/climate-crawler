@@ -50,3 +50,4 @@ class Station_Crawler:
 		file_path = 'data/climate_station.csv'
 		station_df.to_csv(file_path, encoding='utf-8', index=False)
 		print('save: {}'.format(file_path))
+		print('update: climate station')

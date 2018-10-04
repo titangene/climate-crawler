@@ -77,11 +77,13 @@ class Climate_Station:
 	def get_day_periods(self, start_period, end_period):
 		return pd.date_range(start=start_period, end=end_period, freq='D').strftime('%Y-%m-%d').tolist()
 
+	# e.g. get_daily_full_url(period='2017-12', station_id='466910')
 	def get_daily_full_url(self, period, station_id=None, station_name=None):
 		station_id, station_name, stname = self.get_station(station_id, station_name)
 		daily_url = 'MonthDataController.do?command=viewMain'
 		return '{}/{}&station={}&stname={}&datepicker={}'.format(self.base_url, daily_url, station_id, stname, period)
 
+	# e.g. get_hourly_full_url(period='2017-12-30', station_id='466910')
 	def get_hourly_full_url(self, period, station_id=None, station_name=None):
 		station_id, station_name, stname = self.get_station(station_id, station_name)
 		month_url = 'DayDataController.do?command=viewMain'
