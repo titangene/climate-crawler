@@ -13,6 +13,8 @@ class Hourly_Climate_Crawler:
 	def obtain_hourly_data(self, start_period, end_period):
 		print('--------- hourly climate crawler: Start ---------')
 		return_df = pd.DataFrame()
+		# e.g. get_day_periods(start_period='2017-12-30', end_period='2018-01-02')
+		# output: ['2017-12-30', '2017-12-31', '2018-01-01', '2018-01-02']
 		periods = self.climate_station.get_day_periods(start_period, end_period)
 
 		for period in periods:

@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, DateTime, Date
 import pandas as pd
 import numpy as np
 
@@ -56,3 +56,19 @@ class csv_to_mssql:
 	def deal_with_daily_and_hourly_data(self):
 		self.deal_with_daily_data(table_name='Daily_Climate_data', csv_name='daily_climate_data.csv')
 		self.deal_with_hourly_data(table_name='Hourly_Climate_data', csv_name='hourly_climate_data.csv')
+
+	# 儲存爬蟲 log
+	def save_climate_crawler_log(self, start_period, end_period):
+		crawler_log = {
+			'Reporttime': pd.Timestamp.now(),
+			'Start_Period': pd.Timestamp(start_period),
+			'End_Period': pd.Timestamp(end_period)
+		}
+		crawler_log_df = pd.DataFrame(crawler_log, index=[0])
+
+		dtype = {
+			'Reporttime':  DateTime(),
+			'Start_Period': Date(),
+			'End_Period': Date(),
+		}
+		self.to_sql(crawler_log_df, table_name='climate_crawler_log', if_exists='replace', dtype=dtype)

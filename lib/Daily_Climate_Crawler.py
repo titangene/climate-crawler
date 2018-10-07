@@ -13,6 +13,8 @@ class Daily_Climate_Crawler:
 	def obtain_daily_data(self, start_period, end_period, filter_period):
 		print('---------- daily climate crawler: Start ---------')
 		return_df = pd.DataFrame()
+		# e.g. get_month_periods(start_period='2017-11', end_period='2018-2')
+		# output: ['2017-11', '2017-12', '2018-01']
 		periods = self.climate_station.get_month_periods(start_period, end_period)
 
 		for period in periods:
