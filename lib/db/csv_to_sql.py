@@ -35,29 +35,24 @@ class csv_to_mssql:
 	# 處理 日 氣候資料
 	def deal_with_daily_data(self, table_name, csv_name, if_exists='append'):
 		dataSet = self.load_csv(csv_name)
-		result = self.to_sql(dataSet, table_name, if_exists)
-		return result
+		self.to_sql(dataSet, table_name, if_exists)
 
 	# 處理 小時 氣候資料
 	def deal_with_hourly_data(self, table_name, csv_name, if_exists='append'):
 		dataSet = self.load_csv(csv_name)
-		result = self.to_sql(dataSet, table_name, if_exists)
-		return result
+		self.to_sql(dataSet, table_name, if_exists)
 
-	def to_sql(self, dataSet, table_name, if_exists):
+	def to_sql(self, dataSet, table_name, if_exists, dtype=None):
 		result = "This Dataset had been storaged in DB"
 		try:
-			dataSet.to_sql(table_name, self.engine, if_exists=if_exists, index=False)
+			dataSet.to_sql(table_name, self.engine, if_exists=if_exists, index=False, dtype=dtype)
 		except Exception as e:
 			result = e
 		else:
 			result = '{} ({}): OKAY'.format(table_name, if_exists)
-		return result
+		print(result)
 
 	# 處理 日 和 小時 氣候資料
 	def deal_with_daily_and_hourly_data(self):
-		daily_climate_to_sql = self.deal_with_daily_data(table_name='Daily_Climate_data', csv_name='daily_climate_data.csv')
-		print(daily_climate_to_sql)
-
-		hourly_climate_to_sql = self.deal_with_hourly_data(table_name='Hourly_Climate_data', csv_name='hourly_climate_data.csv')
-		print(hourly_climate_to_sql)
+		self.deal_with_daily_data(table_name='Daily_Climate_data', csv_name='daily_climate_data.csv')
+		self.deal_with_hourly_data(table_name='Hourly_Climate_data', csv_name='hourly_climate_data.csv')
