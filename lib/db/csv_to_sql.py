@@ -72,3 +72,16 @@ class csv_to_mssql:
 			'End_Period': Date(),
 		}
 		self.to_sql(crawler_log_df, table_name='climate_crawler_log', if_exists='replace', dtype=dtype)
+
+	def get_last_climate_crawler_log(self):
+		select_sql = 'SELECT * FROM climate_crawler_log'
+		query_result = self.engine.execute(select_sql).fetchall()
+		has_crawler_log = len(query_result) != 0
+
+		if has_crawler_log:
+			report_time, start_period, end_period = query_result[0]
+			report_time = report_time.strftime('%Y-%m-%d %H:%M:%S')
+			print('last crawler: {}, data: {} ~ {}'.format(report_time, start_period, end_period))
+			return start_period, end_period
+		else:
+			return None, None
