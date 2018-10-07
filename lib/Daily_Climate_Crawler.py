@@ -10,7 +10,7 @@ class Daily_Climate_Crawler:
 		self.all_station_id = self.climate_station.all_station_id
 		self.reserved_columns = ['Temperature', 'Max_T', 'Min_T', 'Humidity', 'SunShine_hr', 'SunShine_MJ']
 
-	def obtain_daily_data(self, start_period, end_period):
+	def obtain_daily_data(self, start_period, end_period, filter_period):
 		print('---------- daily climate crawler: Start ---------')
 		return_df = pd.DataFrame()
 		periods = self.climate_station.get_month_periods(start_period, end_period)
@@ -33,6 +33,14 @@ class Daily_Climate_Crawler:
 				new_index = ['UUID', 'Area'] + self.reserved_columns + ['Reporttime']
 				temp_df = temp_df.reindex(new_index, axis=1)
 
+				# period 是否與 filter_period 同月份
+				# filter_period 就是 hourly_start_period
+				# hourly_start_period 是用於 Climate_Crawler 的 hourly crawler 的 start_period
+				if period == filter_period[:-3]:
+					# 只留需要的日期區間
+					period_month_end = (pd.Timestamp(filter_period) + pd.offsets.MonthEnd(0)).strftime('%Y-%m-%d')
+					maskTime = temp_df['Reporttime'].between(filter_period, period_month_end)
+					temp_df = temp_df[maskTime]
 				return_df = pd.concat([return_df, temp_df], ignore_index=True)
 				print(period, station_id, station_area)
 
