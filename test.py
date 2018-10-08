@@ -1,32 +1,22 @@
 import pandas as pd
 import numpy as np
 
-from lib.Daily_Climate_Crawler import Daily_Climate_Crawler
-from lib.Hourly_Climate_Crawler import Hourly_Climate_Crawler
-from lib.db.csv_to_sql import csv_to_mssql
+from lib.Station_Crawler import Station_Crawler
+from lib.Climate_Crawler import Climate_Crawler
+
+def start():
+	# 更新目前可用的氣候觀測站
+	Station_Crawler().start()
+
+	climate_crawler = Climate_Crawler()
+	# 便於測試用，可讓爬蟲指定抓特定觀測站的資料，指定觀測站一定要是 list
+	climate_crawler.daily_crawler.all_station_id = climate_crawler.daily_crawler.all_station_id[0:1]
+	climate_crawler.hourly_crawler.all_station_id = climate_crawler.hourly_crawler.all_station_id[0:1]
+	# 抓氣候資料，包括 daily 和 hourly
+	climate_crawler.start()
 
 def main():
-	daily_crawler = Daily_Climate_Crawler()
-	daily_crawler.all_station_id = daily_crawler.all_station_id[414:418]
-	daily_crawler.obtain_daily_data(start_period='2017-12', end_period='2017-12')
-	# daily_crawler.obtain_daily_data(start_period='2015-1', end_period='2017-12')
-
-	# 某觀測站 在 某月內 每天 的氣候資料
-	# daily_climate_url = daily_crawler.climate_station.get_daily_full_url('2017-12', 'C0Z230')
-	# daily_crawler_df = daily_crawler.catach_climate_data(daily_climate_url)
-	# daily_crawler_df.to_csv('data/daily_climate.csv', index=False, encoding='utf8')
-	# print(daily_crawler_df)
-
-	hourly_crawler = Hourly_Climate_Crawler()
-	hourly_crawler.all_station_id = hourly_crawler.all_station_id[420:424]
-	hourly_crawler.obtain_hourly_data(start_period='2017-12-30', end_period='2017-12-31')
-	# hourly_crawler.obtain_hourly_data(start_period='2015-1-1', end_period='2017-12-31')
-
-	mssql_host_ip = '192.168.191.130:1433'
-	DB_name = 'Test_DB'
-	to_sql = csv_to_mssql(host_ip=mssql_host_ip, DB_name=DB_name)
-	clear_old_data(to_sql)
-	to_sql.deal_with_daily_and_hourly_data()
+	start()
 
 def clear_old_data(to_sql):
 	try:
