@@ -1,3 +1,4 @@
+from sqlalchemy.orm import sessionmaker
 import pandas as pd
 import numpy as np
 
@@ -18,20 +19,15 @@ def start():
 def main():
 	start()
 
-def clear_old_data(to_sql):
-	try:
-		connection = to_sql.engine.connect()
-		connection.execute('DROP TABLE Daily_Climate_data')
-		connection.execute('CREATE TABLE [dbo].[Daily_Climate_data]([UUID] [nchar](80) NOT NULL,[Area] [nchar](32) NULL,[Temperature] [float] NULL,[Max_T] [float] NULL,[Min_T] [float] NULL,[Humidity] [float] NULL,[Reporttime] [datetime] NULL,PRIMARY KEY ([UUID]))')
-
-		connection.execute('DROP TABLE Hourly_Climate_data')
-		connection.execute('CREATE TABLE [dbo].[Hourly_Climate_data]([UUID] [nchar](80) NOT NULL,[Area] [nchar](32) NULL,[Temperature] [float] NULL,[Humidity] [float] NULL,[Reporttime] [datetime] NULL,PRIMARY KEY ([UUID]))')
-		connection.close()
-	except Exception as e:
-		result = e
-	else:
-		result = 'drop table and create table: OKAY'
-	print(result)
+def clear_old_data(engine):
+	Session = sessionmaker(bind=engine)
+	session = Session()
+	session.execute('TRUNCATE TABLE Daily_Climate_data')
+	session.execute('TRUNCATE TABLE Hourly_Climate_data')
+	session.execute('TRUNCATE TABLE climate_crawler_log')
+	session.commit()
+	session.close()
+	print('TRUNCATE TABLE: OKAY')
 
 if __name__ == '__main__':
 	main()
