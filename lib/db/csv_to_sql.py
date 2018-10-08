@@ -58,22 +58,17 @@ class csv_to_mssql:
 		self.deal_with_hourly_data(table_name='Hourly_Climate_data', csv_name='hourly_climate_data.csv')
 
 	# 儲存爬蟲 log
-	def save_climate_crawler_log(self, start_period, end_period):
-		crawler_log = {
-			'Climate_Type': ['hourly', 'daily'],
-			'Reporttime': pd.Timestamp.now(),
-			'Start_Period': pd.Timestamp(start_period),
-			'End_Period': pd.Timestamp(end_period)
-		}
-		crawler_log_df = pd.DataFrame(crawler_log, index=[0])
-
+	# input：log_df 的 type 為 dataFrame
+	def save_climate_crawler_log(self, log_df):
 		dtype = {
 			'Climate_Type': VARCHAR(length=6),
 			'Reporttime':  DateTime(),
 			'Start_Period': Date(),
 			'End_Period': Date(),
 		}
-		self.to_sql(crawler_log_df, table_name='climate_crawler_log', if_exists='replace', dtype=dtype)
+		self.to_sql(log_df, table_name='climate_crawler_log', if_exists='replace', dtype=dtype)
+		print('Save DB: climate crawler log')
+		print(log_df)
 
 	def get_last_climate_crawler_log(self):
 		select_sql = 'SELECT * FROM climate_crawler_log'
@@ -81,9 +76,11 @@ class csv_to_mssql:
 		has_crawler_log = len(query_result) != 0
 
 		if has_crawler_log:
-			report_time, start_period, end_period = query_result[0]
-			report_time = report_time.strftime('%Y-%m-%d %H:%M:%S')
-			print('last crawler: {}, data: {} ~ {}'.format(report_time, start_period, end_period))
-			return start_period, end_period
+			crawler_log_columns=['Climate_Type', 'Reporttime', 'Start_Period', 'End_Period']
+			crawler_log_df = pd.DataFrame(query_result, columns=crawler_log_columns)\
+							   .set_index('Climate_Type')\
+								 .drop('Reporttime', axis=1)
+			print(crawler_log_df)
+			return crawler_log_df
 		else:
-			return None, None
+			return None
