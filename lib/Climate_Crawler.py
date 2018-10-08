@@ -35,10 +35,10 @@ class Climate_Crawler:
 	def get_climate_data_three_years_ago(self):
 		print('如果 DB 為空，需要抓 三年前 2015-1-1 ~ 該天的昨天 期間的所有氣候資料')
 		self.daily_crawler.obtain_daily_data(
-			start_period='2018-09', end_period=self.log_df_daily['New_End_Period'])
+			start_period='2015-01', end_period=self.log_df_daily['New_End_Period'])
 
 		self.hourly_crawler.obtain_hourly_data(
-			start_period='2018-10-6', end_period=self.log_df_hourly['New_End_Period'])
+			start_period='2015-01-01', end_period=self.log_df_hourly['New_End_Period'])
 
 	def has_crawler_log(self):
 		# 若 end_period + 1 天 == 今天 就代表 DB 已有最新的氣候資料
