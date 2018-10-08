@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, DateTime, Date
+from sqlalchemy import create_engine, DateTime, Date, VARCHAR
 import pandas as pd
 import numpy as np
 
@@ -60,6 +60,7 @@ class csv_to_mssql:
 	# 儲存爬蟲 log
 	def save_climate_crawler_log(self, start_period, end_period):
 		crawler_log = {
+			'Climate_Type': ['hourly', 'daily'],
 			'Reporttime': pd.Timestamp.now(),
 			'Start_Period': pd.Timestamp(start_period),
 			'End_Period': pd.Timestamp(end_period)
@@ -67,6 +68,7 @@ class csv_to_mssql:
 		crawler_log_df = pd.DataFrame(crawler_log, index=[0])
 
 		dtype = {
+			'Climate_Type': VARCHAR(length=6),
 			'Reporttime':  DateTime(),
 			'Start_Period': Date(),
 			'End_Period': Date(),
