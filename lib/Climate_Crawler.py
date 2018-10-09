@@ -20,6 +20,7 @@ class Climate_Crawler:
 		self.log_df_daily = self.log_df.loc['daily']
 
 	def start(self):
+		# 爬蟲 log dataFrame 沒有 'Start_Period' 就代表 DB 內沒有爬蟲 log
 		if not ('Start_Period' in self.log_df.columns):
 			# 如果 DB 為空，就抓三年前 2015-1-1 ~ 該天的昨天 期間的所有氣候資料
 			self.get_climate_data_three_years_ago()
@@ -63,23 +64,25 @@ class Climate_Crawler:
 
 	# 設定新的 start 和 end period
 	def set_new_period(self, log_df):
-		if self.log_df is not None:
-			log_df['New_Start_Period'] = log_df['End_Period'].apply(lambda period: self.add_one_day(period))
-		else:
+		if self.log_df is None:
 			log_df = pd.DataFrame({'Climate_Type': ['hourly', 'daily']})\
 				.set_index('Climate_Type')
+		else:
+			log_df['New_Start_Period'] = log_df['End_Period'].apply(lambda period: self.add_one_day(period))
 
-		today_time = pd.Timestamp.now()
-		yesterday_time = today_time - pd.DateOffset(1)
-		end_period_date = yesterday_time.date()
-		log_df['New_End_Period'] = [end_period_date, end_period_date]
+		log_df['New_End_Period'] = self.get_yesterday()
 
 		log_df.loc['hourly'] = log_df.loc['hourly'].apply(lambda period: str(period))
 		log_df.loc['daily'] = log_df.loc['daily'].apply(lambda period: str(period)[:-3])
 		return log_df
 
 	def add_one_day(self, date_str):
-		return  (pd.Timestamp(date_str) + pd.DateOffset(1)).date()
+		return (pd.Timestamp(date_str) + pd.DateOffset(1)).date()
+
+	def get_yesterday(self):
+		today_time = pd.Timestamp.now()
+		yesterday_time = today_time - pd.DateOffset(1)
+		return yesterday_time.date()
 
 	def get_today_str(self):
 		today_time = pd.Timestamp.now()
