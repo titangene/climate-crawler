@@ -57,6 +57,8 @@ class Hourly_Climate_Crawler:
 								  .replace('/', np.nan)\
 								  .dropna(subset=self.reserved_columns, how='all')
 		# 將 Hour 欄位原本的 1 ~ 24 改成 '00' ~ '23'
-		climate_df['Hour'] = list(map(lambda hour: str(hour).zfill(2), range(0, 24)))
+		if not climate_df.empty:
+			climate_df['Hour'] = list(map(lambda hour: str(hour).zfill(2), range(0, 24)))
+			return climate_df
 
-		return climate_df if not climate_df.empty else None
+		return None
