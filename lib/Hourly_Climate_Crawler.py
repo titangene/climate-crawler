@@ -1,4 +1,5 @@
-from urllib.parse import quote
+from bs4 import BeautifulSoup
+import requests
 import pandas as pd
 import numpy as np
 
@@ -43,22 +44,28 @@ class Hourly_Climate_Crawler:
 		return return_df
 
 	def catch_climate_data(self, url):
-		# 保留欄位德 index
-		reserved_columns_index = [0, 3, 5, 12, 13]
-		# return: {0: 'Day', 3: 'Temperature', 5: 'Humidity', ... }
-		rename_columns = dict(zip(reserved_columns_index, ['Hour'] + self.reserved_columns))
+		req = requests.get(url)
+		soup = BeautifulSoup(req.text, 'lxml')
 
-		# iloc[3:, reserved_columns_index] 中的 '3:' 是刪除前 3 列 (index: 0 ~ 2)
-		# 將資料內的 '/' 設為 NA
-		# 只要 subset 這些欄位全部都 NA 才 drop
-		climate_table = pd.read_html(url, attrs={'id': 'MyTable'}, encoding=str)[0]
-		climate_df = climate_table.iloc[3:, reserved_columns_index]\
-								  .rename(columns=rename_columns)\
-								  .replace('/', np.nan)\
-								  .dropna(subset=self.reserved_columns, how='all')
-		# 將 Hour 欄位原本的 1 ~ 24 改成 '00' ~ '23'
-		if not climate_df.empty:
+		data_info = soup.find(class_='imp').text
+		if data_info == '本段時間區間內無觀測資料。':
+			return None
+		else:
+			# 保留欄位德 index
+			reserved_columns_index = [0, 3, 5, 12, 13]
+			# return: {0: 'Day', 3: 'Temperature', 5: 'Humidity', ... }
+			rename_columns = dict(zip(reserved_columns_index, ['Hour'] + self.reserved_columns))
+
+			# iloc[3:, reserved_columns_index] 中的 '3:' 是刪除前 3 列 (index: 0 ~ 2)
+			# 將資料內的 '/' 設為 NA
+			# 只要 subset 這些欄位全部都 NA 才 drop
+			climate_table = soup.find(id='MyTable')
+			climate_df = pd.read_html(str(climate_table))[0]\
+						   .iloc[3:, reserved_columns_index]\
+						   .rename(columns=rename_columns)\
+						   .replace('/', np.nan)\
+						   .dropna(subset=self.reserved_columns, how='all')
+
+			# 將 Hour 欄位原本的 1 ~ 24 改成 '00' ~ '23'
 			climate_df['Hour'] = list(map(lambda hour: str(hour).zfill(2), range(0, 24)))
 			return climate_df
-
-		return None
