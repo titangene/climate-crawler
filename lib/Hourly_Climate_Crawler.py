@@ -20,8 +20,8 @@ class Hourly_Climate_Crawler:
 
 		for period in periods:
 			for station_id in self.all_station_id:
-				daily_climate_url = self.climate_station.get_hourly_full_url(period, station_id)
-				temp_df = self.catch_climate_data(daily_climate_url)
+				hourly_climate_url = self.climate_station.get_hourly_full_url(period, station_id)
+				temp_df = self.catch_climate_data(hourly_climate_url)
 				# 如果沒有任何資料就不儲存
 				if temp_df is None:
 					break
