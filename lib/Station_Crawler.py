@@ -39,7 +39,10 @@ class Station_Crawler:
 	# output columns: station_id, station_name, location
 	def json_to_dataFrame(self, json_data):
 		df_columns = ['station_name', 'station_name_eng', 'location', 'cancellation_station']
+		# 去除 station_id 開頭為 'C1' 的觀測站，這些觀測站只有提供降水量資料
+		# ref: http://e-service.cwb.gov.tw/HistoryDataQuery/downloads/Readme.pdf
 		station_df = pd.DataFrame.from_dict(json_data, orient='index', columns=df_columns)\
+								 .filter(regex='^([^C].|C[^1]).{4}', axis=0)\
 								 .reset_index()\
 								 .rename(columns={'index': 'station_id'})\
 								 .query('cancellation_station == "1"')\
