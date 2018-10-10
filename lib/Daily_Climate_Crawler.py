@@ -74,4 +74,7 @@ class Daily_Climate_Crawler:
 						   .replace('/', np.nan)\
 						   .dropna(subset=self.reserved_columns, how='all')
 
+			if climate_df.empty:
+				return None
+
 			return climate_df
