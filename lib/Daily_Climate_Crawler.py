@@ -24,6 +24,7 @@ class Daily_Climate_Crawler:
 				temp_df = self.catch_climate_data(daily_climate_url)
 				# 如果沒有任何資料就不儲存
 				if temp_df is None:
+					print('---', period, station_id, station_area, ':None ---')
 					break
 
 				station_area = self.climate_station.get_station_area(station_id)
@@ -36,20 +37,32 @@ class Daily_Climate_Crawler:
 				new_index = ['UUID', 'Area'] + self.reserved_columns + ['Reporttime']
 				temp_df = temp_df.reindex(new_index, axis=1)
 
-				# period 是否與 filter_period 同年同月份
-				# filter_period 就是 hourly_start_period
-				# hourly_start_period 是用於 Climate_Crawler 的 hourly crawler 的 start_period
-				if filter_period and period == filter_period[:-3]:
-					# 只留需要的日期區間
-					period_month_end = (pd.Timestamp(filter_period) + pd.offsets.MonthEnd(0)).strftime('%Y-%m-%d')
-					maskTime = temp_df['Reporttime'].between(filter_period, period_month_end)
-					temp_df = temp_df[maskTime]
+				if self.is_same_year_month(period, filter_period):
+					temp_df = self.filter_duplicate_data(temp_df, filter_period)
+
 				return_df = pd.concat([return_df, temp_df], ignore_index=True)
-				print(period, station_id, station_area)
+				print('---', period, station_id, station_area, '---')
 
 			return_df.to_csv('data/daily_climate_data.csv', index=False, encoding='utf8')
 		print('---------- daily climate crawler: End ---------')
 		return return_df
+
+	# period 是否與 filter_period 同年同月份
+	# filter_period 就是 hourly_start_period
+	# hourly_start_period 是用於 Climate_Crawler 的 hourly crawler 的 start_period
+	def is_same_year_month(self, period, filter_period):
+		return filter_period and period == filter_period[:-3]
+
+	# period 是否與 filter_period 同年同月份
+	# filter_period 就是 hourly_start_period
+	# hourly_start_period 是用於 Climate_Crawler 的 hourly crawler 的 start_period
+	def filter_duplicate_data(self, df, filter_period):
+		# 只留需要的日期區間
+		period_month_end = (pd.Timestamp(filter_period) + pd.offsets.MonthEnd(0)).strftime('%Y-%m-%d')
+		print('filter: {} ~ {}'.format(filter_period, period_month_end))
+		maskTime = df['Reporttime'].between(filter_period, period_month_end)
+		temp_df = df[maskTime]
+		return temp_df
 
 	def catch_climate_data(self, url):
 		req = requests.get(url)
