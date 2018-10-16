@@ -25,7 +25,7 @@ class Climate_Crawler:
 			# 如果 DB 為空，就抓三年前 2015-1-1 ~ 該天的昨天 期間的所有氣候資料
 			self.get_climate_data_three_years_ago()
 		else:
-			self.has_crawler_log()
+			self.is_crawler_log()
 
 		self.to_sql.deal_with_daily_and_hourly_data()
 		self.to_sql.disconnect()
@@ -43,7 +43,7 @@ class Climate_Crawler:
 		self.hourly_crawler.obtain_hourly_data(
 			start_period=hourly_start_period, end_period=self.log_df_hourly['New_End_Period'])
 
-	def has_crawler_log(self):
+	def is_crawler_log(self):
 		# 若 New_Start_Period (也就是 End_Period + 1 天) == 今天 就代表 DB 已有最新的氣候資料
 		has_latest_data = self.log_df_hourly['New_Start_Period'] == self.get_today_str()
 		if (has_latest_data):

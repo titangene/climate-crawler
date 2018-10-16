@@ -79,7 +79,7 @@ class csv_to_mssql:
 			crawler_log_columns=['Climate_Type', 'Reporttime', 'Start_Period', 'End_Period']
 			crawler_log_df = pd.DataFrame(query_result, columns=crawler_log_columns)\
 							   .set_index('Climate_Type')\
-								 .drop('Reporttime', axis=1)
+							   .drop('Reporttime', axis=1)
 			print('last climate crawler log:')
 			print(crawler_log_df)
 			return crawler_log_df

@@ -9,9 +9,13 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[climate_crawler_log](
-	[Climate_Type] [char](6) NOT NULL,
-	[Reporttime] [datetime] NULL,
-	[Start_Period] [date] NULL,
-	[End_Period] [date] NULL
-) ON [PRIMARY]
+	[Station_ID] [char](6) NOT NULL,
+	[Station_Area] [nchar](32) NOT NULL,
+	[Reporttime] [datetime] NOT NULL,
+	[Hourly_Start_Period] [char](10) NULL,
+	[Hourly_End_Period] [char](10) NULL,
+	[Daily_Start_Period] [char](7) NULL,
+	[Daily_End_Period] [char](7) NULL,
+	PRIMARY KEY ([Station_ID])
+)
 GO
