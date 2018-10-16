@@ -5,15 +5,18 @@ from lib.Station_Crawler import Station_Crawler
 from lib.Daily_Climate_Crawler import Daily_Climate_Crawler
 from lib.Hourly_Climate_Crawler import Hourly_Climate_Crawler
 from lib.db.csv_to_sql import csv_to_mssql
+from lib.Climate_Crawler_Log import Climate_Crawler_Log
 
 class Climate_Crawler:
 	def __init__(self):
-		self.to_sql = csv_to_mssql()
+		self.to_mssql = csv_to_mssql()
+		self.climate_crawler_Log = Climate_Crawler_Log(self.to_mssql)
+
 		# 抓氣候資料 instance
 		self.daily_crawler = Daily_Climate_Crawler()
 		self.hourly_crawler = Hourly_Climate_Crawler()
 		# 爬蟲 log dataFrame
-		self.log_df = self.to_sql.get_last_climate_crawler_log()
+		self.log_df = self.climate_crawler_Log.get_climate_crawler_log(self.to_mssql)
 		# 設定新的 start 和 end period
 		self.log_df = self.set_new_period(self.log_df)
 		self.log_df_hourly = self.log_df.loc['hourly']
@@ -27,10 +30,10 @@ class Climate_Crawler:
 		else:
 			self.is_crawler_log()
 
-		self.to_sql.deal_with_daily_and_hourly_data()
-		self.to_sql.disconnect()
+		self.to_mssql.deal_with_daily_and_hourly_data()
+		self.to_mssql.disconnect()
 		# 儲存爬蟲 log
-		self.to_sql.save_climate_crawler_log(self.log_df)
+		self.climate_crawler_Log.save_climate_crawler_log(self.to_mssql)
 
 	# 如果 DB 為空，就抓三年前 2015-1-1 ~ 該天的昨天 期間的所有氣候資料
 	def get_climate_data_three_years_ago(self):

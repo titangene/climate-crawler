@@ -1,5 +1,4 @@
-from sqlalchemy import create_engine, Table, Column, DateTime, CHAR, NCHAR
-from sqlalchemy.schema import MetaData
+from sqlalchemy import create_engine
 from pandas.io.sql import SQLDatabase, SQLTable
 import pandas as pd
 import numpy as np
@@ -10,7 +9,7 @@ class csv_to_mssql:
 		self.user_id = 'SA' # 預設使用者為 SA
 		self.pwd = 'taipower@2018'  # 預設使用者密碼
 
-		self.engine = self.create_engine()
+		self.sql_engine = self.create_engine()
 
 	# return: host_ip, user_id
 	# e.g. host_ip = '192.168.191.130:1433', user_id = 'Test_DB'
@@ -32,7 +31,7 @@ class csv_to_mssql:
 		return dataSet
 
 	def disconnect(self):
-		self.engine.dispose()
+		self.sql_engine.dispose()
 
 	# 處理 日 氣候資料
 	def deal_with_daily_data(self, table_name, csv_name, if_exists='append'):
@@ -48,9 +47,9 @@ class csv_to_mssql:
 		result = "This Dataset had been storaged in DB"
 		try:
 			if keys is not None and sql_table is not None:
-				dataSet.to_sql(table_name, self.engine, if_exists=if_exists, index=False, dtype=dtype)
+				dataSet.to_sql(table_name, self.sql_engine, if_exists=if_exists, index=False, dtype=dtype)
 			if keys is None and sql_table is None:
-				self.to_sql_set_primary_key_and_not_null(dataSet, table_name, self.engine,
+				self.to_sql_set_primary_key_and_not_null(dataSet, table_name, self.sql_engine,
 						if_exists=if_exists, index=False, keys=keys, sql_table=sql_table)
 		except Exception as e:
 			result = e
@@ -89,37 +88,3 @@ class csv_to_mssql:
 	def deal_with_daily_and_hourly_data(self):
 		self.deal_with_daily_data(table_name='Daily_Climate_data', csv_name='daily_climate_data.csv')
 		self.deal_with_hourly_data(table_name='Hourly_Climate_data', csv_name='hourly_climate_data.csv')
-
-	# 儲存爬蟲 log
-	# input：log_df 的 type 為 dataFrame
-	def save_climate_crawler_log(self, log_df):
-		table_name='climate_crawler_log'
-		meta = MetaData(self.engine, schema=None)
-		sql_table = Table(table_name, meta,
-			Column('Station_ID', CHAR(length=6), primary_key=True, nullable=False),
-			Column('Station_Area', NCHAR(length=32), nullable=False),
-			Column('Reporttime', DateTime, nullable=False),
-			Column('Hourly_Start_Period', CHAR(length=10)),
-			Column('Hourly_End_Period', CHAR(length=10)),
-			Column('Daily_Start_Period', CHAR(length=7)),
-			Column('Daily_End_Period', CHAR(length=7)))
-
-		self.to_sql(log_df, table_name, if_exists='replace', keys='Station_ID', sql_table=sql_table)
-		print('Save DB: climate crawler log')
-		print(log_df)
-
-	def get_last_climate_crawler_log(self):
-		select_sql = 'SELECT * FROM climate_crawler_log'
-		query_result = self.engine.execute(select_sql).fetchall()
-		has_crawler_log = len(query_result) != 0
-
-		if has_crawler_log:
-			crawler_log_columns=['Station_ID', 'Station_Area', 'Reporttime', 'Hourly_Start_Period', 'Hourly_End_Period', 'Daily_Start_Period', 'Daily_End_Period']
-			crawler_log_df = pd.DataFrame(query_result, columns=crawler_log_columns)\
-							   .set_index('Station_ID')\
-							   .drop('Reporttime', axis=1)
-			print('last climate crawler log:')
-			print(crawler_log_df)
-			return crawler_log_df
-		else:
-			return None
