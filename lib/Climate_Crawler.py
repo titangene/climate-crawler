@@ -20,8 +20,7 @@ class Climate_Crawler:
 		self.hourly_crawler = Hourly_Climate_Crawler()
 
 	def start(self):
-		# 爬蟲 log dataFrame 沒有 'Start_Period' 就代表 DB 內沒有爬蟲 log
-		if not ('Start_Period' in self.log_df.columns):
+		if self.log_df.empty:
 			# 如果 DB 為空，就抓三年前 2015-1-1 ~ 該天的昨天 期間的所有氣候資料
 			self.get_climate_data_three_years_ago()
 		else:
@@ -30,7 +29,7 @@ class Climate_Crawler:
 		self.to_mssql.deal_with_daily_and_hourly_data()
 		self.to_mssql.disconnect()
 		# 儲存爬蟲 log
-		self.climate_crawler_Log.save_climate_crawler_log(self.to_mssql)
+		self.climate_crawler_Log.save_climate_crawler_log(self.log_df)
 
 	# 如果 DB 為空，就抓三年前 2015-1-1 ~ 該天的昨天 期間的所有氣候資料
 	def get_climate_data_three_years_ago(self):

@@ -8,7 +8,7 @@ import lib.Climate_Common as Climate_Common
 class Climate_Crawler_Log:
 	def __init__(self, to_mssql):
 		self.to_mssql = to_mssql
-		self.sql_engine = self.to_mssql.engine
+		self.sql_engine = self.to_mssql.sql_engine
 		self.table_name = 'climate_crawler_log'
 		self.log_columns = ['Station_ID', 'Station_Area', 'Reporttime', 'Hourly_Start_Period', 'Hourly_End_Period', 'Daily_Start_Period', 'Daily_End_Period']
 

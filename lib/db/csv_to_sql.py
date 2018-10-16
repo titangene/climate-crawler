@@ -47,10 +47,10 @@ class csv_to_mssql:
 		result = "This Dataset had been storaged in DB"
 		try:
 			if keys is not None and sql_table is not None:
-				dataSet.to_sql(table_name, self.sql_engine, if_exists=if_exists, index=False, dtype=dtype)
-			if keys is None and sql_table is None:
 				self.to_sql_set_primary_key_and_not_null(dataSet, table_name, self.sql_engine,
 						if_exists=if_exists, index=False, keys=keys, sql_table=sql_table)
+			if keys is None and sql_table is None:
+				dataSet.to_sql(table_name, self.sql_engine, if_exists=if_exists, index=False, dtype=dtype)
 		except Exception as e:
 			result = e
 		else:
