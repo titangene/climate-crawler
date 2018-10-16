@@ -14,8 +14,8 @@ CREATE TABLE [dbo].[climate_crawler_log](
 	[Reporttime] [datetime] NOT NULL,
 	[Hourly_Start_Period] [char](10) NULL,
 	[Hourly_End_Period] [char](10) NULL,
-	[Daily_Start_Period] [char](7) NULL,
-	[Daily_End_Period] [char](7) NULL,
+	[Daily_Start_Period] [char](10) NULL,
+	[Daily_End_Period] [char](10) NULL,
 	PRIMARY KEY ([Station_ID])
 )
 GO

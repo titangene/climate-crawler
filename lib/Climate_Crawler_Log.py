@@ -27,8 +27,8 @@ class Climate_Crawler_Log:
 				Column('Reporttime', DateTime, nullable=False),
 				Column('Hourly_Start_Period', CHAR(length=10)),
 				Column('Hourly_End_Period', CHAR(length=10)),
-				Column('Daily_Start_Period', CHAR(length=7)),
-				Column('Daily_End_Period', CHAR(length=7)))
+				Column('Daily_Start_Period', CHAR(length=10)),
+				Column('Daily_End_Period', CHAR(length=10)))
 		return sql_table
 
 	# 儲存爬蟲 log
