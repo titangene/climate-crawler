@@ -93,13 +93,18 @@ class csv_to_mssql:
 	# 儲存爬蟲 log
 	# input：log_df 的 type 為 dataFrame
 	def save_climate_crawler_log(self, log_df):
-		dtype = {
-			'Climate_Type': VARCHAR(length=6),
-			'Reporttime':  DateTime(),
-			'Start_Period': Date(),
-			'End_Period': Date(),
-		}
-		self.to_sql(log_df, table_name='climate_crawler_log', if_exists='replace', dtype=dtype)
+		table_name='climate_crawler_log'
+		meta = MetaData(self.engine, schema=None)
+		sql_table = Table(table_name, meta,
+			Column('Station_ID', CHAR(length=6), primary_key=True, nullable=False),
+			Column('Station_Area', NCHAR(length=32), nullable=False),
+			Column('Reporttime', DateTime, nullable=False),
+			Column('Hourly_Start_Period', CHAR(length=10)),
+			Column('Hourly_End_Period', CHAR(length=10)),
+			Column('Daily_Start_Period', CHAR(length=7)),
+			Column('Daily_End_Period', CHAR(length=7)))
+
+		self.to_sql(log_df, table_name, if_exists='replace', keys='Station_ID', sql_table=sql_table)
 		print('Save DB: climate crawler log')
 		print(log_df)
 
