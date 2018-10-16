@@ -11,6 +11,7 @@ class Climate_Station:
 		self.all_station_id = self.get_all_station_id()
 
 		self.dataFrame['stname'] = self.dataFrame['station_name'].apply(lambda name: self.set_stname(name))
+		self.dataFrame['station_area'] = self.dataFrame.index.map(lambda id: self.set_station_area(id))
 
 	# 讀取觀測站 csv
 	def read_station_csv_to_df(self):
@@ -30,6 +31,15 @@ class Climate_Station:
 	# 將觀測站名稱做兩次 encode 處理
 	def set_stname(self, station_name):
 		return self.encodeURI(self.encodeURI(station_name))
+
+	# 設定 觀測站名稱 與 所在縣市
+	# e.g. set_station_area('466900')
+	# output: '臺北市-淡水'
+	def set_station_area(self, station_id):
+		station_location = self.get_station_location(station_id)
+		station_name = self.get_station_name(station_id)
+		station_area = '{}-{}'.format(station_location, station_name)
+		return station_area
 
 	# 取得 觀測站名稱 與 所在縣市
 	# e.g. get_station_area('466900')
