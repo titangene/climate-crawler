@@ -31,35 +31,34 @@ class Climate_Station:
 	def set_stname(self, station_name):
 		return self.encodeURI(self.encodeURI(station_name))
 
-	# 用 觀測站 id 找到對應的 觀測站名稱
-	def get_station_name(self, station_id):
-		expression = 'station_id == "{}"'.format(station_id)
-		station_name = self.dataFrame.query(expression)['station_name'][0]
-		return station_name
-
-	# 用 觀測站 id 找到觀測站的所在縣市
-	def get_station_location(self, station_id):
-		expression = 'station_id == "{}"'.format(station_id)
-		station_location = self.dataFrame.query(expression)['location'][0]
-		return station_location
-
 	# 取得 觀測站名稱 與 所在縣市
 	# e.g. get_station_area('466900')
 	# output: '臺北市-淡水'
 	def get_station_area(self, station_id):
-		station_location = self.get_station_location(station_id)
-		station_name = self.get_station_name(station_id)
-		station_area = '{}-{}'.format(station_location, station_name)
+		station_area = self.dataFrame.loc[station_id]['station_area']
 		return station_area
+
+	# 用 觀測站 id 找到對應的 觀測站名稱
+	def get_station_name(self, station_id):
+		station_name = self.dataFrame.loc[station_id]['station_name']
+		return station_name
+
+	# 用 觀測站 id 找到觀測站的所在縣市
+	def get_station_location(self, station_id):
+		station_location = self.dataFrame.loc[station_id]['location']
+		return station_location
 
 	def get_full_url(self, sub_url, station_id, period):
 		stname = self.dataFrame.loc[station_id]['stname']
-		return '{}/{}&station={}&stname={}&datepicker={}'.format(self.base_url, sub_url, station_id, stname, period)
+		full_url = '{}/{}&station={}&stname={}&datepicker={}'.format(self.base_url, sub_url, station_id, stname, period)
+		return full_url
 
 	# e.g. get_daily_full_url(period='2017-12', station_id='466910')
 	def get_daily_full_url(self, period, station_id):
-		return self.get_full_url(self.daily_url, station_id, period)
+		daily_full_url = self.get_full_url(self.daily_url, station_id, period)
+		return daily_full_url
 
 	# e.g. get_hourly_full_url(period='2017-12-30', station_id='466910')
 	def get_hourly_full_url(self, period, station_id):
-		return self.get_full_url(self.hourly_url, station_id, period)
+		hourly_full_url = self.get_full_url(self.hourly_url, station_id, period)
+		return hourly_full_url

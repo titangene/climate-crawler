@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from lib.Station_Crawler import Station_Crawler
+import lib.Climate_Common as Climate_Common
 from lib.Daily_Climate_Crawler import Daily_Climate_Crawler
 from lib.Hourly_Climate_Crawler import Hourly_Climate_Crawler
 from lib.db.csv_to_sql import csv_to_mssql
@@ -10,17 +10,14 @@ from lib.Climate_Crawler_Log import Climate_Crawler_Log
 class Climate_Crawler:
 	def __init__(self):
 		self.to_mssql = csv_to_mssql()
+
+		# 爬蟲 log instance
 		self.climate_crawler_Log = Climate_Crawler_Log(self.to_mssql)
+		self.log_df = self.climate_crawler_Log.log_df
 
 		# 抓氣候資料 instance
 		self.daily_crawler = Daily_Climate_Crawler()
 		self.hourly_crawler = Hourly_Climate_Crawler()
-		# 爬蟲 log dataFrame
-		self.log_df = self.climate_crawler_Log.get_climate_crawler_log(self.to_mssql)
-		# 設定新的 start 和 end period
-		self.log_df = self.set_new_period(self.log_df)
-		self.log_df_hourly = self.log_df.loc['hourly']
-		self.log_df_daily = self.log_df.loc['daily']
 
 	def start(self):
 		# 爬蟲 log dataFrame 沒有 'Start_Period' 就代表 DB 內沒有爬蟲 log
@@ -40,11 +37,13 @@ class Climate_Crawler:
 		print('如果 DB 為空，需要抓 三年前 2015-1-1 ~ 該天的昨天 期間的所有氣候資料')
 		daily_start_period = '2015-01'
 		hourly_start_period = '2015-01-01'
-		self.daily_crawler.obtain_daily_data(
-			start_period=daily_start_period, end_period=self.log_df_daily['New_End_Period'])
+		end_period = Climate_Common.get_yesterday_date()
 
-		self.hourly_crawler.obtain_hourly_data(
-			start_period=hourly_start_period, end_period=self.log_df_hourly['New_End_Period'])
+		self.daily_crawler.obtain_data(
+				start_period=daily_start_period, end_period=end_period)
+
+		self.hourly_crawler.obtain_data(
+				start_period=hourly_start_period, end_period=end_period)
 
 	def is_crawler_log(self):
 		# 若 New_Start_Period (也就是 End_Period + 1 天) == 今天 就代表 DB 已有最新的氣候資料
@@ -56,41 +55,15 @@ class Climate_Crawler:
 
 	# 抓最新的氣候資料
 	def get_recent_data(self):
-		print('daily crawler: {} ~ {}'.format(
-			self.log_df_daily['New_Start_Period'], self.log_df_daily['New_End_Period']))
-		print('hourly crawler: {} ~ {}'.format(
-			self.log_df_hourly['New_Start_Period'], self.log_df_hourly['New_End_Period']))
+		daily_start_period = self.log_df['New_Daily_Start_Period']
+		hourly_start_period = self.log_df['New_Hourly_Start_Period']
+		end_period = Climate_Common.get_yesterday_date()
 
-		self.daily_crawler.obtain_daily_data(
-			start_period=self.log_df_daily['New_Start_Period'], end_period=self.log_df_daily['New_End_Period'], filter_period=self.log_df_hourly['New_Start_Period'])
+		print('daily crawler: {} ~ {}'.format(daily_start_period, end_period))
+		print('hourly crawler: {} ~ {}'.format(hourly_start_period, end_period))
 
-		self.hourly_crawler.obtain_hourly_data(
-			start_period=self.log_df_hourly['New_Start_Period'], end_period=self.log_df_hourly['New_End_Period'])
+		self.daily_crawler.obtain_data(
+			start_period=daily_start_period, end_period=end_period, filter_period=hourly_start_period)
 
-	# 設定新的 start 和 end period
-	def set_new_period(self, log_df):
-		if self.log_df is None:
-			log_df = pd.DataFrame({'Climate_Type': ['hourly', 'daily']})\
-				.set_index('Climate_Type')
-		else:
-			log_df['New_Start_Period'] = log_df['End_Period'].apply(lambda period: self.add_one_day(period))
-
-		log_df['New_End_Period'] = self.get_yesterday_date()
-
-		log_df.loc['hourly'] = log_df.loc['hourly'].apply(lambda period: str(period))
-		log_df.loc['daily'] = log_df.loc['daily'].apply(lambda period: str(period)[:-3])
-		return log_df
-
-	def add_one_day(self, date_str):
-		return (pd.Timestamp(date_str) + pd.DateOffset(1)).date()
-
-	def get_yesterday_date(self):
-		today_time = pd.Timestamp.now()
-		yesterday_time = today_time - pd.DateOffset(1)
-		return yesterday_time.date()
-
-	def get_today_str(self):
-		today_time = pd.Timestamp.now()
-		today_date = today_time.date()
-		today_str = today_date.strftime('%Y-%m-%d')
-		return today_str
+		self.hourly_crawler.obtain_data(
+			start_period=hourly_start_period, end_period=end_period)

@@ -3,6 +3,7 @@ import requests
 import pandas as pd
 import numpy as np
 
+import lib.Climate_Common as Climate_Common
 from lib.Climate_Station import Climate_Station
 
 class Daily_Climate_Crawler:
@@ -11,12 +12,12 @@ class Daily_Climate_Crawler:
 		self.all_station_id = self.climate_station.all_station_id
 		self.reserved_columns = ['Temperature', 'Max_T', 'Min_T', 'Humidity', 'SunShine_hr', 'SunShine_MJ']
 
-	def obtain_daily_data(self, start_period, end_period, filter_period=None):
+	def obtain_data(self, start_period, end_period, filter_period=None):
 		print('---------- daily climate crawler: Start ---------')
 		return_df = pd.DataFrame()
 		# e.g. get_month_periods(start_period='2017-11', end_period='2018-2')
 		# output: ['2017-11', '2017-12', '2018-01']
-		periods = self.climate_station.get_month_periods(start_period, end_period)
+		periods = Climate_Common.get_month_periods(start_period, end_period)
 
 		for period in periods:
 			for station_id in self.all_station_id:
@@ -31,11 +32,11 @@ class Daily_Climate_Crawler:
 				temp_df['Reporttime'] = period + '-' + temp_df['Day']
 				temp_df['Area'] = station_area
 				temp_df['UUID'] = temp_df['Reporttime'] + '_' + temp_df['Area']
-				temp_df.drop(['Day'], axis=1, inplace=True)
 
 				# 將欄位重新排序成 DB 的欄位順序
 				new_index = ['UUID', 'Area'] + self.reserved_columns + ['Reporttime']
-				temp_df = temp_df.reindex(new_index, axis=1)
+				temp_df = temp_df.drop(['Day'], axis=1)\
+								 .reindex(new_index, axis=1)
 
 				if self.is_same_year_month(period, filter_period):
 					temp_df = self.filter_duplicate_data(temp_df, filter_period)

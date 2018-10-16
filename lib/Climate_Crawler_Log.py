@@ -3,6 +3,8 @@ from sqlalchemy.schema import MetaData
 import pandas as pd
 import numpy as np
 
+import lib.Climate_Common as Climate_Common
+
 class Climate_Crawler_Log:
 	def __init__(self, to_mssql):
 		self.to_mssql = to_mssql
@@ -11,6 +13,11 @@ class Climate_Crawler_Log:
 		self.log_columns = ['Station_ID', 'Station_Area', 'Reporttime', 'Hourly_Start_Period', 'Hourly_End_Period', 'Daily_Start_Period', 'Daily_End_Period']
 
 		self.sql_table = self.set_sql_table()
+
+		# 爬蟲 log dataFrame
+		self.log_df = self.get_climate_crawler_log()
+		# 設定新的 start 和 end period
+		self.log_df = self.set_new_period(self.log_df)
 
 	def set_sql_table(self):
 		meta = MetaData(self.sql_engine, schema=None)
@@ -45,3 +52,18 @@ class Climate_Crawler_Log:
 			return crawler_log_df
 		else:
 			return None
+
+	def create_empty_dataFrame(self):
+		log_df = pd.DataFrame(columns=self.log_columns)\
+				   .set_index('Station_ID')
+		return log_df
+
+	# 設定新的 start 和 end period
+	def set_new_period(self, log_df):
+		if self.log_df is None:
+			log_df = self.create_empty_dataFrame()
+		else:
+			log_df['New_Hourly_Start_Period'] = log_df['Hourly_End_Period'].apply(lambda period: Climate_Common.add_one_day(period))
+			log_df['New_Hourly_End_Period'] = Climate_Common.get_yesterday_date()
+
+		return log_df
