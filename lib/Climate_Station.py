@@ -5,10 +5,10 @@ from urllib.parse import quote
 class Climate_Station:
 	def __init__(self):
 		self.base_url = 'https://e-service.cwb.gov.tw/HistoryDataQuery'
-		self.hourly_url = 'DayDataController.do?command=viewMain'
-		self.daily_url = 'MonthDataController.do?command=viewMain'
+		self.hourly_url = self.base_url + 'DayDataController.do?command=viewMain'
+		self.daily_url = self.base_url + 'MonthDataController.do?command=viewMain'
 		self.station_df = self.read_station_csv_to_df()
-		self.all_station_id = self.get_all_station_id()
+		self.station_id_list = self.get_station_id_list()
 
 		self.station_df['stname'] = self.station_df['station_name'].apply(lambda name: self.set_stname(name))
 		self.station_df['station_area'] = self.station_df.index.map(lambda id: self.set_station_area(id))
@@ -20,9 +20,9 @@ class Climate_Station:
 		return climate_station_df
 
 	# 取得所有觀測站 id
-	def get_all_station_id(self):
-		all_station_id = self.station_df.index.values
-		return all_station_id
+	def get_station_id_list(self):
+		station_id_list = self.station_df.index.values
+		return station_id_list
 
 	def encodeURI(self, uri):
 		# 包括 '/', '(', ')' 不會做 encode 處理
@@ -58,9 +58,9 @@ class Climate_Station:
 		station_location = self.station_df.loc[station_id]['location']
 		return station_location
 
-	def get_full_url(self, sub_url, station_id, period):
+	def get_full_url(self, url, station_id, period):
 		stname = self.station_df.loc[station_id]['stname']
-		full_url = '{}/{}&station={}&stname={}&datepicker={}'.format(self.base_url, sub_url, station_id, stname, period)
+		full_url = '{}&station={}&stname={}&datepicker={}'.format(url, station_id, stname, period)
 		return full_url
 
 	# e.g. get_daily_full_url(period='2017-12', station_id='466910')

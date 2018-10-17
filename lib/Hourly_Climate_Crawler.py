@@ -4,13 +4,11 @@ import pandas as pd
 import numpy as np
 
 import lib.Climate_Common as Climate_Common
-from lib.Climate_Station import Climate_Station
 from lib.csv import csv_process
 
 class Hourly_Climate_Crawler:
-	def __init__(self):
-		self.climate_station = Climate_Station()
-		self.all_station_id = self.climate_station.all_station_id
+	def __init__(self, climate_station):
+		self.climate_station = climate_station
 		self.reserved_columns = ['Temperature', 'Humidity', 'SunShine_hr', 'SunShine_MJ']
 
 	def get_station_climate_data(self, station_id, periods):
@@ -57,7 +55,7 @@ class Hourly_Climate_Crawler:
 		periods = Climate_Common.get_day_periods(start_period, end_period)
 		record_periods = {}
 
-		for station_id in self.all_station_id:
+		for station_id in self.climate_station.station_id_list:
 			station_area = self.climate_station.get_station_area(station_id)
 
 			for period in periods:

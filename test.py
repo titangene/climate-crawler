@@ -11,8 +11,7 @@ def start():
 
 	climate_crawler = Climate_Crawler()
 	# 便於測試用，可讓爬蟲指定抓特定觀測站的資料，指定觀測站一定要是 list
-	climate_crawler.daily_crawler.all_station_id = climate_crawler.daily_crawler.all_station_id[0:1]
-	climate_crawler.hourly_crawler.all_station_id = climate_crawler.hourly_crawler.all_station_id[0:1]
+	climate_crawler.station_id_list = climate_crawler.station_id_list[0:2]
 	# 抓氣候資料，包括 daily 和 hourly
 	climate_crawler.start()
 

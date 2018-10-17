@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 
 import lib.Climate_Common as Climate_Common
+from lib.Climate_Station import Climate_Station
 from lib.Daily_Climate_Crawler import Daily_Climate_Crawler
 from lib.Hourly_Climate_Crawler import Hourly_Climate_Crawler
 from lib.db.csv_to_sql import csv_to_mssql
@@ -15,9 +16,11 @@ class Climate_Crawler:
 		self.climate_crawler_Log = Climate_Crawler_Log(self.to_mssql)
 		self.log_df = self.climate_crawler_Log.log_df
 
+		self.climate_station = Climate_Station()
+		self.station_id_list = self.climate_station.station_id_list
 		# 抓氣候資料 instance
-		self.daily_crawler = Daily_Climate_Crawler()
-		self.hourly_crawler = Hourly_Climate_Crawler()
+		self.daily_crawler = Daily_Climate_Crawler(self.climate_station)
+		self.hourly_crawler = Hourly_Climate_Crawler(self.climate_station)
 
 	def start(self):
 		if self.log_df.empty:
