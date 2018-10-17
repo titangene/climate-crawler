@@ -26,6 +26,8 @@ class Climate_Crawler:
 		else:
 			self.is_crawler_log()
 
+		# 更新爬蟲 log dataFrame
+		self.log_df = self.climate_crawler_Log.update_dataFrame(self.log_df)
 		# 儲存爬蟲 log
 		self.climate_crawler_Log.save_climate_crawler_log(self.log_df)
 		# 儲存 日 和 小時 氣候資料
