@@ -5,8 +5,8 @@ from urllib.parse import quote
 class Climate_Station:
 	def __init__(self):
 		self.base_url = 'https://e-service.cwb.gov.tw/HistoryDataQuery'
-		self.hourly_url = self.base_url + 'DayDataController.do?command=viewMain'
-		self.daily_url = self.base_url + 'MonthDataController.do?command=viewMain'
+		self.hourly_url = self.base_url + '/DayDataController.do?command=viewMain'
+		self.daily_url = self.base_url + '/MonthDataController.do?command=viewMain'
 		self.station_df = self.read_station_csv_to_df()
 		self.station_id_list = self.get_station_id_list()
 
