@@ -10,7 +10,8 @@ class Climate_Crawler_Log:
 		self.to_mssql = to_mssql
 		self.sql_engine = self.to_mssql.sql_engine
 		self.table_name = 'climate_crawler_log'
-		self.log_columns = ['Station_ID', 'Station_Area', 'Reporttime', 'Hourly_Start_Period', 'Hourly_End_Period', 'Daily_Start_Period', 'Daily_End_Period']
+		self.log_columns_period = ['Daily_Start_Period', 'Daily_End_Period', 'Hourly_Start_Period', 'Hourly_End_Period']
+		self.log_columns = ['Station_ID', 'Station_Area', 'Reporttime'] + self.log_columns_period
 
 		self.sql_table = self.set_sql_table()
 
@@ -25,10 +26,10 @@ class Climate_Crawler_Log:
 				Column('Station_ID', CHAR(length=6), primary_key=True, nullable=False),
 				Column('Station_Area', NCHAR(length=32), nullable=False),
 				Column('Reporttime', DateTime, nullable=False),
-				Column('Hourly_Start_Period', CHAR(length=10)),
-				Column('Hourly_End_Period', CHAR(length=10)),
 				Column('Daily_Start_Period', CHAR(length=10)),
-				Column('Daily_End_Period', CHAR(length=10)))
+				Column('Daily_End_Period', CHAR(length=10)),
+				Column('Hourly_Start_Period', CHAR(length=10)),
+				Column('Hourly_End_Period', CHAR(length=10)))
 		return sql_table
 
 	# 儲存爬蟲 log
@@ -63,7 +64,9 @@ class Climate_Crawler_Log:
 		if self.log_df is None:
 			log_df = self.create_empty_dataFrame()
 		else:
-			log_df['New_Hourly_Start_Period'] = log_df['Hourly_End_Period'].apply(lambda period: Climate_Common.add_one_day(period))
-			log_df['New_Hourly_End_Period'] = Climate_Common.get_yesterday_date()
+			log_df['New_Daily_Start_Period'] = log_df['Daily_End_Period'].apply(lambda period: Climate_Common.add_one_day_str(period))
+			log_df['New_Daily_End_Period'] = Climate_Common.get_yesterday_date_str()
+			log_df['New_Hourly_Start_Period'] = log_df['Hourly_End_Period'].apply(lambda period: Climate_Common.add_one_day_str(period))
+			log_df['New_Hourly_End_Period'] = Climate_Common.get_yesterday_date_str()
 
 		return log_df
