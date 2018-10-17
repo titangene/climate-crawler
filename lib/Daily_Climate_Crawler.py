@@ -44,7 +44,8 @@ class Daily_Climate_Crawler:
 			print(period, station_id, station_area, 'record: {} ~ {}'.format(record_start_period, record_end_period))
 			# print(temp_df)
 
-		csv_process.to_csv(climate_df, 'daily_climate/data_{}.csv'.format(station_id))
+		if not climate_df.empty:
+			csv_process.to_csv(climate_df, 'daily_climate/data_{}.csv'.format(station_id))
 		print('---------- daily climate crawler: End ---------')
 		return record_start_period, record_end_period
 
