@@ -35,7 +35,7 @@ class Climate_Crawler:
 
 		if is_catch_data:
 			# 更新爬蟲 log dataFrame
-			self.log_df = self.climate_crawler_Log.update_dataFrame(self.log_df)
+			self.log_df = self.climate_crawler_Log.update_log_dataFrame(self.log_df)
 			# 儲存爬蟲 log
 			self.climate_crawler_Log.save_climate_crawler_log(self.log_df)
 			# 儲存 日 和 小時 氣候資料
@@ -71,11 +71,15 @@ class Climate_Crawler:
 			# e.g. 將 '2018-10-05' 變成 '2018-10'，只取年月
 			daily_start_period = row['New_Daily_Start_Period'][:-3]
 			daily_end_period = row['New_Daily_End_Period'][:-3]
-			filter_period = row['New_Daily_Start_Period']
+			hourly_start_period = row['New_Hourly_Start_Period']
+			hourly_end_period = row['New_Hourly_End_Period']
+
 			daily_periods = Climate_Common.get_month_periods(daily_start_period, daily_end_period)
-			hourly_periods = Climate_Common.get_day_periods(row['New_Hourly_Start_Period'], row['New_Hourly_End_Period'])
+			hourly_periods = Climate_Common.get_day_periods(hourly_start_period, hourly_end_period)
 			print('daily periods:', daily_periods)
 			print('hourly periods:', hourly_periods)
+
+			filter_period = row['New_Daily_Start_Period']
 
 			daily_record_start_period, daily_record_end_period = \
 					self.daily_crawler.get_station_climate_data(station_id, daily_periods, filter_period)

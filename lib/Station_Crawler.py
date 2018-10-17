@@ -5,6 +5,8 @@ import json
 import requests
 import re
 
+from lib.csv import csv_process
+
 class Station_Crawler:
 	def start(self):
 		url = 'https://e-service.cwb.gov.tw/HistoryDataQuery/QueryDataController.do?command=viewMain'
@@ -50,7 +52,6 @@ class Station_Crawler:
 		return station_df
 
 	def save_df_to_csv(self, station_df):
-		file_path = 'data/climate_station.csv'
-		station_df.to_csv(file_path, encoding='utf-8', index=False)
+		csv_process.to_csv(station_df, 'climate_station.csv')
 		print('save: {}'.format(file_path))
 		print('update: climate station')

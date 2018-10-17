@@ -69,7 +69,7 @@ class Climate_Crawler_Log:
 
 		return log_df
 
-	def update_dataFrame(self, log_df):
+	def update_log_dataFrame(self, log_df):
 		new_period_columns = ['New_Daily_Start_Period', 'New_Daily_End_Period', 'New_Hourly_Start_Period', 'New_Hourly_End_Period']
 		rename_columns = dict(zip(new_period_columns, self.log_columns_period))
 		log_df = log_df.drop(self.log_columns_period, axis=1)\

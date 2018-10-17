@@ -7,11 +7,11 @@ class Climate_Station:
 		self.base_url = 'https://e-service.cwb.gov.tw/HistoryDataQuery'
 		self.hourly_url = 'DayDataController.do?command=viewMain'
 		self.daily_url = 'MonthDataController.do?command=viewMain'
-		self.dataFrame = self.read_station_csv_to_df()
+		self.station_df = self.read_station_csv_to_df()
 		self.all_station_id = self.get_all_station_id()
 
-		self.dataFrame['stname'] = self.dataFrame['station_name'].apply(lambda name: self.set_stname(name))
-		self.dataFrame['station_area'] = self.dataFrame.index.map(lambda id: self.set_station_area(id))
+		self.station_df['stname'] = self.station_df['station_name'].apply(lambda name: self.set_stname(name))
+		self.station_df['station_area'] = self.station_df.index.map(lambda id: self.set_station_area(id))
 
 	# 讀取觀測站 csv
 	def read_station_csv_to_df(self):
@@ -21,7 +21,7 @@ class Climate_Station:
 
 	# 取得所有觀測站 id
 	def get_all_station_id(self):
-		all_station_id = self.dataFrame.index.values
+		all_station_id = self.station_df.index.values
 		return all_station_id
 
 	def encodeURI(self, uri):
@@ -45,21 +45,21 @@ class Climate_Station:
 	# e.g. get_station_area('466900')
 	# output: '臺北市-淡水'
 	def get_station_area(self, station_id):
-		station_area = self.dataFrame.loc[station_id]['station_area']
+		station_area = self.station_df.loc[station_id]['station_area']
 		return station_area
 
 	# 用 觀測站 id 找到對應的 觀測站名稱
 	def get_station_name(self, station_id):
-		station_name = self.dataFrame.loc[station_id]['station_name']
+		station_name = self.station_df.loc[station_id]['station_name']
 		return station_name
 
 	# 用 觀測站 id 找到觀測站的所在縣市
 	def get_station_location(self, station_id):
-		station_location = self.dataFrame.loc[station_id]['location']
+		station_location = self.station_df.loc[station_id]['location']
 		return station_location
 
 	def get_full_url(self, sub_url, station_id, period):
-		stname = self.dataFrame.loc[station_id]['stname']
+		stname = self.station_df.loc[station_id]['stname']
 		full_url = '{}/{}&station={}&stname={}&datepicker={}'.format(self.base_url, sub_url, station_id, stname, period)
 		return full_url
 
