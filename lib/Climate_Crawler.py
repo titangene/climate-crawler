@@ -47,12 +47,17 @@ class Climate_Crawler:
 				start_period=hourly_start_period, end_period=end_period)
 
 	def is_crawler_log(self):
-		# 若 New_Start_Period (也就是 End_Period + 1 天) == 今天 就代表 DB 已有最新的氣候資料
-		has_latest_data = self.log_df_hourly['New_Start_Period'] == self.get_today_str()
-		if (has_latest_data):
+		if self.is_latest_data():
 			print('已有最新資料，不必抓資料')
 		else:
 			self.get_recent_data()
+
+	# 是否有最新的氣候資料
+	def is_latest_data(self):
+		is_hourly_latest_data = Climate_Common.is_today(self.log_df['New_Hourly_Start_Period']).all()
+		is_daily_latest_data = Climate_Common.is_today(self.log_df['New_Daily_Start_Period']).all()
+		print('hourly 是否有最新資料:', is_hourly_latest_data, '| daily 是否有最新資料:', is_daily_latest_data)
+		return is_hourly_latest_data and is_daily_latest_data
 
 	# 抓最新的氣候資料
 	def get_recent_data(self):
