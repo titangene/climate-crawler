@@ -29,6 +29,11 @@ class Daily_Climate_Crawler:
 
 			temp_df = self.data_preprocess(temp_df, period, station_area, filter_period)
 
+			# 過濾資料後，如果沒有任何資料就不儲存
+			if temp_df.empty:
+				print(period, station_id, station_area, 'filter None')
+				break
+
 			# 記錄爬蟲 log
 			if period_idx == 0:
 				record_start_period = self.record_crawler_log_start_period(temp_df)
@@ -94,14 +99,12 @@ class Daily_Climate_Crawler:
 		return df
 
 	# period 是否與 filter_period 同年同月份
-	# filter_period 就是 hourly_start_period
-	# hourly_start_period 是用於 Climate_Crawler 的 hourly crawler 的 start_period
+	# filter_period 就是 start_period
 	def is_same_year_month(self, period, filter_period):
 		return filter_period and period == filter_period[:-3]
 
 	# period 是否與 filter_period 同年同月份
-	# filter_period 就是 hourly_start_period
-	# hourly_start_period 是用於 Climate_Crawler 的 hourly crawler 的 start_period
+	# filter_period 就是 start_period
 	def filter_out_duplicate_data(self, df, filter_period):
 		# 只留需要的日期區間
 		period_month_end = (pd.Timestamp(filter_period) + pd.offsets.MonthEnd(0)).strftime('%Y-%m-%d')
