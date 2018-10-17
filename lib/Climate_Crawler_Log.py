@@ -44,9 +44,7 @@ class Climate_Crawler_Log:
 		has_crawler_log = len(query_result) != 0
 
 		if has_crawler_log:
-			crawler_log_df = pd.DataFrame(query_result, columns=self.log_columns)\
-									.set_index('Station_ID')\
-									.drop('Reporttime', axis=1)
+			crawler_log_df = pd.DataFrame(query_result, columns=self.log_columns).set_index('Station_ID')
 			print('last climate crawler log:')
 			print(crawler_log_df)
 			return crawler_log_df
