@@ -11,11 +11,11 @@ class Climate_Crawler_Log:
 		self.sql_engine = self.to_mssql.sql_engine
 		self.table_name = 'climate_crawler_log'
 		self.log_columns_period = ['Daily_Start_Period', 'Daily_End_Period', 'Hourly_Start_Period', 'Hourly_End_Period']
+		self.new_log_columns_period = self.set_new_log_columns_period()
 		self.log_columns = ['Station_ID', 'Station_Area', 'Reporttime'] + self.log_columns_period
 
 		self.sql_table = self.set_sql_table()
-
-		# 爬蟲 log dataFrame
+		# 取得爬蟲 log dataFrame
 		self.log_df = self.get_climate_crawler_log()
 		# 設定新的 start 和 end period
 		self.log_df = self.set_new_period(self.log_df)
@@ -31,6 +31,11 @@ class Climate_Crawler_Log:
 				Column('Hourly_Start_Period', CHAR(length=10)),
 				Column('Hourly_End_Period', CHAR(length=10)))
 		return sql_table
+
+	# 新增 新的 period 欄位 (在前面加上 'New')
+	# e.g. 'Daily_Start_Period' --> 'New_Daily_Start_Period'
+	def set_new_log_columns_period(self):
+		return list(map(lambda col: 'New_' + col, self.log_columns_period))
 
 	# 儲存爬蟲 log
 	# input：log_df 的 type 為 dataFrame
@@ -53,7 +58,8 @@ class Climate_Crawler_Log:
 
 	# 建立空的 爬蟲 log dataFrame
 	def create_empty_dataFrame(self):
-		log_df = pd.DataFrame(columns=self.log_columns)\
+		columns = self.log_columns + self.new_log_columns_period
+		log_df = pd.DataFrame(columns=columns)\
 				   .set_index('Station_ID')
 		return log_df
 
@@ -70,8 +76,7 @@ class Climate_Crawler_Log:
 		return log_df
 
 	def update_log_dataFrame(self, log_df):
-		new_period_columns = ['New_Daily_Start_Period', 'New_Daily_End_Period', 'New_Hourly_Start_Period', 'New_Hourly_End_Period']
-		rename_columns = dict(zip(new_period_columns, self.log_columns_period))
+		rename_columns = dict(zip(self.new_log_columns_period, self.log_columns_period))
 		log_df = log_df.drop(self.log_columns_period, axis=1)\
 				.rename(columns=rename_columns)\
 				.reset_index()
