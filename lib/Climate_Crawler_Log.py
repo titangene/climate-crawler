@@ -69,36 +69,6 @@ class Climate_Crawler_Log:
 
 		return log_df
 
-	def get_recent_data(self, log_df, daily_crawler, hourly_crawler):
-		for station_id, row in log_df.iterrows():
-			print(station_id, row['Station_Area'])
-
-			# 計算爬蟲要抓資料的時間範圍
-			# e.g. 將 '2018-10-05' 變成 '2018-10'，只取年月
-			daily_start_period = row['New_Daily_Start_Period'][:-3]
-			daily_end_period = row['New_Daily_End_Period'][:-3]
-			filter_period = row['New_Daily_Start_Period']
-			daily_periods = Climate_Common.get_month_periods(daily_start_period, daily_end_period)
-			hourly_periods = Climate_Common.get_day_periods(row['New_Hourly_Start_Period'], row['New_Hourly_End_Period'])
-			print('daily periods:', daily_periods)
-			print('hourly periods:', hourly_periods)
-
-			daily_record_start_period, daily_record_end_period = \
-					daily_crawler.get_station_climate_data(station_id, daily_periods, filter_period)
-			hourly_record_start_period, hourly_record_end_period = \
-					hourly_crawler.get_station_climate_data(station_id, hourly_periods)
-			print('record daily crawler: {} ~ {}'.format(daily_record_start_period, daily_record_end_period))
-			print('record hourly crawler: {} ~ {}\n'.format(hourly_record_start_period, hourly_record_end_period))
-
-			row['Reporttime'] = pd.Timestamp.now()
-			row['New_Daily_Start_Period'] = daily_record_start_period
-			row['New_Daily_End_Period'] = daily_record_end_period
-			row['New_Hourly_Start_Period'] = hourly_record_start_period
-			row['New_Hourly_End_Period'] = hourly_record_end_period
-
-			log_df.loc[station_id] = row
-		return log_df
-
 	def update_dataFrame(self, log_df):
 		new_period_columns = ['New_Daily_Start_Period', 'New_Daily_End_Period', 'New_Hourly_Start_Period', 'New_Hourly_End_Period']
 		rename_columns = dict(zip(new_period_columns, self.log_columns_period))
