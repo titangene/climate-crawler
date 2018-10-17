@@ -36,7 +36,6 @@ class Climate_Crawler_Log:
 	# input：log_df 的 type 為 dataFrame
 	def save_climate_crawler_log(self, log_df):
 		self.to_mssql.to_sql(log_df, self.table_name, if_exists='replace', keys='Station_ID', sql_table=self.sql_table)
-		print('Save DB: climate crawler log')
 		print(log_df)
 
 	def get_climate_crawler_log(self):
@@ -54,6 +53,7 @@ class Climate_Crawler_Log:
 		else:
 			return None
 
+	# 建立空的 爬蟲 log dataFrame
 	def create_empty_dataFrame(self):
 		log_df = pd.DataFrame(columns=self.log_columns)\
 				   .set_index('Station_ID')
@@ -69,4 +69,34 @@ class Climate_Crawler_Log:
 			log_df['New_Hourly_Start_Period'] = log_df['Hourly_End_Period'].apply(lambda period: Climate_Common.add_one_day_str(period))
 			log_df['New_Hourly_End_Period'] = Climate_Common.get_yesterday_date_str()
 
+		return log_df
+
+	def get_recent_data(self, log_df, daily_crawler, hourly_crawler):
+		for station_id, row in log_df.iterrows():
+			print(station_id, row['Station_Area'])
+
+			# 計算爬蟲要抓資料的時間範圍
+			# e.g. 將 '2018-10-05' 變成 '2018-10'，只取年月
+			daily_start_period = row['New_Daily_Start_Period'][:-3]
+			daily_end_period = row['New_Daily_End_Period'][:-3]
+			filter_period = row['New_Daily_Start_Period']
+			daily_periods = Climate_Common.get_month_periods(daily_start_period, daily_end_period)
+			hourly_periods = Climate_Common.get_day_periods(row['New_Hourly_Start_Period'], row['New_Hourly_End_Period'])
+			print('daily periods:', daily_periods)
+			print('hourly periods:', hourly_periods)
+
+			daily_record_start_period, daily_record_end_period = \
+					daily_crawler.get_station_climate_data(station_id, daily_periods, filter_period)
+			hourly_record_start_period, hourly_record_end_period = \
+					hourly_crawler.get_station_climate_data(station_id, hourly_periods)
+			print('record daily crawler: {} ~ {}'.format(daily_record_start_period, daily_record_end_period))
+			print('record hourly crawler: {} ~ {}\n'.format(hourly_record_start_period, hourly_record_end_period))
+
+			row['Reporttime'] = pd.Timestamp.now()
+			row['New_Daily_Start_Period'] = daily_record_start_period
+			row['New_Daily_End_Period'] = daily_record_end_period
+			row['New_Hourly_Start_Period'] = hourly_record_start_period
+			row['New_Hourly_End_Period'] = hourly_record_end_period
+
+			log_df.loc[station_id] = row
 		return log_df
