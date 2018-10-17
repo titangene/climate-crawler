@@ -11,16 +11,18 @@ def get_month_periods(start_period, end_period):
 def get_day_periods(start_period, end_period):
 	return pd.date_range(start=start_period, end=end_period, freq='D').strftime('%Y-%m-%d').tolist()
 
-def add_one_day(date_str):
-	return (pd.Timestamp(date_str) + pd.DateOffset(1)).date()
+def is_today(date_str):
+	return date_str == get_today_str()
 
-def get_yesterday_date():
+def add_one_day_str(date_str):
+	add_one_time = pd.Timestamp(date_str) + pd.DateOffset(1)
+	return add_one_time.date().strftime('%Y-%m-%d')
+
+def get_yesterday_date_str():
 	today_time = pd.Timestamp.now()
 	yesterday_time = today_time - pd.DateOffset(1)
-	return yesterday_time.date()
+	return yesterday_time.date().strftime('%Y-%m-%d')
 
 def get_today_str():
 	today_time = pd.Timestamp.now()
-	today_date = today_time.date()
-	today_str = today_date.strftime('%Y-%m-%d')
-	return today_str
+	return today_time.date().strftime('%Y-%m-%d')
