@@ -5,6 +5,7 @@ import numpy as np
 
 import lib.Climate_Common as Climate_Common
 from lib.Climate_Station import Climate_Station
+from lib.csv import csv_process
 
 class Daily_Climate_Crawler:
 	def __init__(self):
@@ -14,39 +15,53 @@ class Daily_Climate_Crawler:
 
 	def obtain_data(self, start_period, end_period, filter_period=None):
 		print('---------- daily climate crawler: Start ---------')
-		return_df = pd.DataFrame()
+		climate_df = pd.DataFrame()
 		# e.g. get_month_periods(start_period='2017-11', end_period='2018-2')
 		# output: ['2017-11', '2017-12', '2018-01']
 		periods = Climate_Common.get_month_periods(start_period, end_period)
+		record_periods = {}
 
-		for period in periods:
-			for station_id in self.all_station_id:
+		for station_id in self.all_station_id:
+			station_area = self.climate_station.get_station_area(station_id)
+
+			for period in periods:
 				daily_climate_url = self.climate_station.get_daily_full_url(period, station_id)
 				temp_df = self.catch_climate_data(daily_climate_url)
+
 				# 如果沒有任何資料就不儲存
 				if temp_df is None:
 					print('---', period, station_id, station_area, ':None ---')
 					break
 
-				station_area = self.climate_station.get_station_area(station_id)
-				temp_df['Reporttime'] = period + '-' + temp_df['Day']
-				temp_df['Area'] = station_area
-				temp_df['UUID'] = temp_df['Reporttime'] + '_' + temp_df['Area']
+				temp_df = self.data_preprocess(temp_df, period, station_area, filter_period)
 
-				# 將欄位重新排序成 DB 的欄位順序
-				new_index = ['UUID', 'Area'] + self.reserved_columns + ['Reporttime']
-				temp_df = temp_df.drop(['Day'], axis=1)\
-								 .reindex(new_index, axis=1)
+				# 記錄爬蟲 log (最後一筆的 Reporttime)
+				record_period = self.record_crawler_log(temp_df)
+				record_periods[station_area] = record_period
 
-				if self.is_same_year_month(period, filter_period):
-					temp_df = self.filter_duplicate_data(temp_df, filter_period)
+				climate_df = pd.concat([climate_df, temp_df], ignore_index=True)
+				print('---', period, station_id, station_area, 'record:', record_period, '---')
+				print(daily_climate_url)
+				print(temp_df)
 
-				return_df = pd.concat([return_df, temp_df], ignore_index=True)
-				print('---', period, station_id, station_area, '---')
-
-			return_df.to_csv('data/daily_climate_data.csv', index=False, encoding='utf8')
+			csv_process.to_csv(climate_df, 'daily_climate_data.csv')
 		print('---------- daily climate crawler: End ---------')
-		return return_df
+		return record_periods
+
+	def data_preprocess(self, df, period, station_area, filter_period):
+		df['Reporttime'] = period + '-' + df['Day']
+		df['Area'] = station_area
+		df['UUID'] = df['Reporttime'] + '_' + df['Area']
+
+		# 將欄位重新排序成 DB 的欄位順序
+		new_index = ['UUID', 'Area'] + self.reserved_columns + ['Reporttime']
+		df = df.drop(['Day'], axis=1)\
+			   .reindex(new_index, axis=1)
+
+		if self.is_same_year_month(period, filter_period):
+			df = self.filter_out_duplicate_data(df, filter_period)
+
+		return df
 
 	# period 是否與 filter_period 同年同月份
 	# filter_period 就是 hourly_start_period
@@ -57,7 +72,7 @@ class Daily_Climate_Crawler:
 	# period 是否與 filter_period 同年同月份
 	# filter_period 就是 hourly_start_period
 	# hourly_start_period 是用於 Climate_Crawler 的 hourly crawler 的 start_period
-	def filter_duplicate_data(self, df, filter_period):
+	def filter_out_duplicate_data(self, df, filter_period):
 		# 只留需要的日期區間
 		period_month_end = (pd.Timestamp(filter_period) + pd.offsets.MonthEnd(0)).strftime('%Y-%m-%d')
 		print('filter: {} ~ {}'.format(filter_period, period_month_end))
