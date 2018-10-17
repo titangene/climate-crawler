@@ -13,6 +13,38 @@ class Daily_Climate_Crawler:
 		self.all_station_id = self.climate_station.all_station_id
 		self.reserved_columns = ['Temperature', 'Max_T', 'Min_T', 'Humidity', 'SunShine_hr', 'SunShine_MJ']
 
+	def get_station_climate_data(self, station_id, periods, filter_period=None):
+		print('---------- daily climate crawler: Start ---------')
+		station_area = self.climate_station.get_station_area(station_id)
+		climate_df = pd.DataFrame()
+		record_start_period = None
+		record_end_period = None
+
+		for period_idx, period in enumerate(periods):
+			daily_climate_url = self.climate_station.get_daily_full_url(period, station_id)
+			temp_df = self.catch_climate_data(daily_climate_url)
+
+			# 如果沒有任何資料就不儲存
+			if temp_df is None:
+				print(period, station_id, station_area, 'None')
+				break
+
+			temp_df = self.data_preprocess(temp_df, period, station_area, filter_period)
+
+			# 記錄爬蟲 log
+			if period_idx == 0:
+				record_start_period = self.record_crawler_log_start_period(temp_df)
+
+			record_end_period = self.record_crawler_log_end_period(temp_df)
+
+			climate_df = pd.concat([climate_df, temp_df], ignore_index=True)
+			print(period, station_id, station_area, 'record: {} ~ {}'.format(record_start_period, record_end_period))
+			# print(temp_df)
+
+		csv_process.to_csv(climate_df, 'daily_climate/data_{}.csv'.format(station_id))
+		print('---------- daily climate crawler: End ---------')
+		return record_start_period, record_end_period
+
 	def obtain_data(self, start_period, end_period, filter_period=None):
 		print('---------- daily climate crawler: Start ---------')
 		climate_df = pd.DataFrame()
@@ -79,6 +111,16 @@ class Daily_Climate_Crawler:
 		maskTime = df['Reporttime'].between(filter_period, period_month_end)
 		temp_df = df[maskTime]
 		return temp_df
+
+	# 記錄爬蟲 log 之起始時間 (第一筆的 Reporttime)
+	def record_crawler_log_start_period(self, df):
+		record_start_period = df.iloc[0]['Reporttime']
+		return record_start_period
+
+	# 記錄爬蟲 log 之終止時間 (最後一筆的 Reporttime)
+	def record_crawler_log_end_period(self, df):
+		record_end_period = df.iloc[-1]['Reporttime']
+		return record_end_period
 
 	def catch_climate_data(self, url):
 		req = requests.get(url)
