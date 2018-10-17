@@ -33,13 +33,13 @@ class csv_to_mssql:
 	def disconnect(self):
 		self.sql_engine.dispose()
 
-	# 處理 日 氣候資料
-	def deal_with_daily_data(self, table_name, csv_name, if_exists='append'):
+	# 儲存 日 氣候資料
+	def save_daily_data(self, table_name, csv_name, if_exists='append'):
 		dataSet = self.load_csv(csv_name)
 		self.to_sql(dataSet, table_name, if_exists)
 
-	# 處理 小時 氣候資料
-	def deal_with_hourly_data(self, table_name, csv_name, if_exists='append'):
+	# 儲存 小時 氣候資料
+	def save_hourly_data(self, table_name, csv_name, if_exists='append'):
 		dataSet = self.load_csv(csv_name)
 		self.to_sql(dataSet, table_name, if_exists)
 
@@ -55,7 +55,7 @@ class csv_to_mssql:
 			result = e
 		else:
 			result = '{} ({}): OKAY'.format(table_name, if_exists)
-		print(result)
+		print('to_sql:', result)
 
 	# DataFrame.to_sql() 自訂版
 	# 可自訂 primary key 和 not null
@@ -84,7 +84,7 @@ class csv_to_mssql:
 		table.create()
 		table.insert(chunksize)
 
-	# 處理 日 和 小時 氣候資料
-	def deal_with_daily_and_hourly_data(self):
-		self.deal_with_daily_data(table_name='Daily_Climate_data', csv_name='daily_climate_data.csv')
-		self.deal_with_hourly_data(table_name='Hourly_Climate_data', csv_name='hourly_climate_data.csv')
+	# 儲存 日 和 小時 氣候資料
+	def save_daily_and_hourly_data(self):
+		self.save_daily_data(table_name='Daily_Climate_data', csv_name='daily_climate_data.csv')
+		self.save_hourly_data(table_name='Hourly_Climate_data', csv_name='hourly_climate_data.csv')

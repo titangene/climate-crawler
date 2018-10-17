@@ -26,10 +26,12 @@ class Climate_Crawler:
 		else:
 			self.is_crawler_log()
 
-		self.to_mssql.deal_with_daily_and_hourly_data()
-		self.to_mssql.disconnect()
 		# 儲存爬蟲 log
 		self.climate_crawler_Log.save_climate_crawler_log(self.log_df)
+		# 儲存 日 和 小時 氣候資料
+		self.to_mssql.save_daily_and_hourly_data()
+		# 關閉資料庫連線
+		self.to_mssql.disconnect()
 
 	# 如果 DB 為空，就抓三年前 2015-1-1 ~ 該天的昨天 期間的所有氣候資料
 	def get_climate_data_three_years_ago(self):
