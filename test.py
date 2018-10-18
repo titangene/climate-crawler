@@ -21,8 +21,8 @@ def start():
 	# simulation_with_crawler_log(to_mssql)
 
 	climate_crawler = Climate_Crawler()
-	# 便於測試用，可讓爬蟲指定抓特定觀測站的資料
-	climate_crawler.station_df = climate_crawler.station_df.head(3)
+	# 便於測試用，減少抓氣候資輛的數量
+	reduce_number_catch_climate_data(climate_crawler)
 	# 抓氣候資料，包括 daily 和 hourly 的氣候資料
 	climate_crawler.start()
 
@@ -49,6 +49,14 @@ def simulation_with_crawler_log(to_mssql):
 	climate_crawler_Log.save_climate_crawler_log(log_df)
 	print('\n# simulation: \nlast climate crawler log:')
 	print(log_df)
+
+# 便於測試用，減少抓氣候資輛的數量
+def reduce_number_catch_climate_data(climate_crawler):
+	# 便於測試用，可指定抓特定觀測站的資料
+	climate_crawler.station_df = climate_crawler.station_df.head(3)
+	# 便於測試用，可指定當某觀測站沒有紀錄爬蟲 log 時，預抓的資料時間範圍
+	climate_crawler.three_years_ago_daily_start_period = '2018-09'
+	climate_crawler.three_years_ago_hourly_start_period = '2018-10-15'
 
 def get_db_climate_data_length(sql_engine):
 	select_sql_daily = 'SELECT * FROM Daily_Climate_data'

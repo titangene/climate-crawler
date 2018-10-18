@@ -22,6 +22,9 @@ class Climate_Crawler:
 		self.daily_crawler = Daily_Climate_Crawler(self.climate_station)
 		self.hourly_crawler = Hourly_Climate_Crawler(self.climate_station)
 
+		self.three_years_ago_daily_start_period = Climate_Common.get_begin_three_years_ago()[:-3]
+		self.three_years_ago_hourly_start_period = Climate_Common.get_begin_three_years_ago()
+
 	def start(self):
 		if not self.log_df.empty and self.is_latest_data():
 			print('已有最新資料，不必抓新資料')
@@ -116,9 +119,9 @@ class Climate_Crawler:
 		print('如果 DB 為空，需要抓 三年前 2015-1-1 ~ 該天的昨天 期間的所有氣候資料')
 		yesterday_str = Climate_Common.get_yesterday_date_str()
 
-		daily_start_period = '2018-09'
+		daily_start_period = self.three_years_ago_daily_start_period
 		daily_end_period = yesterday_str[:-3]
-		hourly_start_period = '2018-10-15'
+		hourly_start_period = self.three_years_ago_hourly_start_period
 		hourly_end_period = yesterday_str
 
 		daily_periods = Climate_Common.get_month_periods(daily_start_period, daily_end_period)
