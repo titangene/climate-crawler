@@ -42,9 +42,12 @@ class Hourly_Climate_Crawler:
 			print(period, station_id, station_area, 'record: {} ~ {}'.format(record_start_period, record_end_period))
 			# print(temp_df.tail(2))
 
-		if not climate_df.empty:
-			csv_process.to_csv(climate_df, 'hourly_climate/data_{}.csv'.format(station_id))
-		print('--------- hourly climate crawler: End ---------')
+		file_name = 'hourly_climate/data_{}.csv'.format(station_id)
+		if climate_df.empty:
+			csv_process.delete_csv(file_name)
+		else:
+			csv_process.to_csv(climate_df, file_name)
+		print('--------- hourly climate crawler: End -----------')
 		return record_start_period, record_end_period
 
 	def data_preprocess(self, df, period, station_area):
