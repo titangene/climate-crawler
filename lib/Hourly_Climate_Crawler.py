@@ -47,44 +47,6 @@ class Hourly_Climate_Crawler:
 		print('--------- hourly climate crawler: End ---------')
 		return record_start_period, record_end_period
 
-	def obtain_data(self, start_period, end_period):
-		print('--------- hourly climate crawler: Start ---------')
-		climate_df = pd.DataFrame()
-		# e.g. get_day_periods(start_period='2017-12-30', end_period='2018-01-02')
-		# output: ['2017-12-30', '2017-12-31', '2018-01-01', '2018-01-02']
-		periods = Climate_Common.get_day_periods(start_period, end_period)
-		record_periods = {}
-
-		for station_id in self.climate_station.station_id_list:
-			station_area = self.climate_station.get_station_area(station_id)
-
-			for period in periods:
-				hourly_climate_url = self.climate_station.get_hourly_full_url(period, station_id)
-				temp_df = self.catch_climate_data(hourly_climate_url)
-
-				# 如果沒有任何資料就不儲存
-				if temp_df is None:
-					print('---', period, station_id, station_area, ':None ---')
-					break
-
-				temp_df = self.data_preprocess(temp_df, period, station_area)
-
-				# 記錄爬蟲 log (最後一筆的 Reporttime)
-				if self.is_twenty_three_oclock(temp_df):
-					record_period = period
-					record_periods[station_area] = record_period
-				else:
-					break
-
-				climate_df = pd.concat([climate_df, temp_df], ignore_index=True)
-				print('---', period, station_id, station_area, 'record:', record_period, '---')
-				print(hourly_climate_url)
-				print(temp_df)
-
-			csv_process.to_csv(climate_df, 'hourly_climate_data.csv')
-		print('--------- hourly climate crawler: End ---------')
-		return record_periods
-
 	def data_preprocess(self, df, period, station_area):
 		df['Reporttime'] = period + ' ' + df['Hour'] + ':00'
 		df['Area'] = station_area
