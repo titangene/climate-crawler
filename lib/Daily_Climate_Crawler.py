@@ -103,13 +103,14 @@ class Daily_Climate_Crawler:
 			rename_columns = dict(zip(reserved_columns_index, ['Day'] + self.reserved_columns))
 
 			# iloc[3:, reserved_columns_index] 中的 '3:' 是刪除前 3 列 (index: 0 ~ 2)
-			# 將資料內的 '/' 設為 NA
+			# 將資料內的 '/' 和 'X' 設為 NA
 			# 只要 subset 這些欄位全部都 NA 才 drop
 			climate_table = soup.find(id='MyTable')
 			climate_df = pd.read_html(str(climate_table))[0]\
 						   .iloc[3:, reserved_columns_index]\
 						   .rename(columns=rename_columns)\
 						   .replace('/', np.nan)\
+						   .replace('X', np.nan)\
 						   .dropna(subset=self.reserved_columns, how='all')
 
 			if climate_df.empty:
