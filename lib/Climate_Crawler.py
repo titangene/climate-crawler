@@ -12,13 +12,12 @@ class Climate_Crawler:
 	def __init__(self):
 		self.to_mssql = csv_to_mssql()
 
-		# 爬蟲 log instance
 		self.climate_crawler_Log = Climate_Crawler_Log(self.to_mssql)
 		self.log_df = self.climate_crawler_Log.log_df
 
 		self.climate_station = Climate_Station()
 		self.station_id_list = self.climate_station.station_id_list
-		# 抓氣候資料 instance
+
 		self.daily_crawler = Daily_Climate_Crawler(self.climate_station)
 		self.hourly_crawler = Hourly_Climate_Crawler(self.climate_station)
 

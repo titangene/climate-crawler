@@ -33,9 +33,8 @@ class Hourly_Climate_Crawler:
 			if self.is_twenty_three_oclock(temp_df):
 				if period_idx == 0:
 					record_start_period = period
-					record_end_period = period
-				else:
-					record_end_period = period
+
+				record_end_period = period
 			else:
 				break
 

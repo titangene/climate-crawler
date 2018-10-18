@@ -41,7 +41,6 @@ class Climate_Crawler_Log:
 	# input：log_df 的 type 為 dataFrame
 	def save_climate_crawler_log(self, log_df):
 		self.to_mssql.to_sql(log_df, self.table_name, if_exists='replace', keys='Station_ID', sql_table=self.sql_table)
-		print(log_df)
 
 	def get_climate_crawler_log(self):
 		select_sql = 'SELECT * FROM {}'.format(self.table_name)
@@ -50,7 +49,7 @@ class Climate_Crawler_Log:
 
 		if has_crawler_log:
 			crawler_log_df = pd.DataFrame(query_result, columns=self.log_columns).set_index('Station_ID')
-			print('last climate crawler log:')
+			print('\n# DB: \nlast climate crawler log:')
 			print(crawler_log_df)
 			return crawler_log_df
 		else:

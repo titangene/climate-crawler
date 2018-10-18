@@ -6,7 +6,7 @@ def start():
 	Station_Crawler().start()
 
 	climate_crawler = Climate_Crawler()
-	# 抓氣候資料，包括 daily 和 hourly
+	# 抓氣候資料，包括 daily 和 hourly 的氣候資料
 	climate_crawler.start()
 
 def main():
