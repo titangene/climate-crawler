@@ -7,6 +7,7 @@ from lib.Daily_Climate_Crawler import Daily_Climate_Crawler
 from lib.Hourly_Climate_Crawler import Hourly_Climate_Crawler
 from lib.db.csv_to_sql import csv_to_mssql
 from lib.Climate_Crawler_Log import Climate_Crawler_Log
+from lib.csv.csv_process import merge_climate_data_to_csv
 
 class Climate_Crawler:
 	def __init__(self):
@@ -31,6 +32,10 @@ class Climate_Crawler:
 			self.log_df = self.climate_crawler_Log.update_log_dataFrame(self.log_df)
 			# 儲存爬蟲 log
 			self.climate_crawler_Log.save_climate_crawler_log(self.log_df)
+			# 合併氣候資料
+			merge_daily_climate, merge_hourly_climate = merge_climate_data_to_csv()
+			print('daily_climate merge Success:', merge_daily_climate)
+			print('hourly_climate merge Success:', merge_hourly_climate)
 			# 儲存 日 和 小時 氣候資料
 			self.to_mssql.save_daily_and_hourly_data()
 			# 關閉資料庫連線
