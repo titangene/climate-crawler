@@ -33,9 +33,9 @@ def merge_csv(merge_folder_path, save_file_name):
 		return True
 
 def merge_climate_data_to_csv():
-	merge_daily_climate = merge_csv(merge_folder_path='data/daily_climate', save_file_name='daily_climate_data.csv')
-	merge_hourly_climate = merge_csv(merge_folder_path='data/hourly_climate', save_file_name='hourly_climate_data.csv')
-	return merge_daily_climate, merge_hourly_climate
+	is_merge_daily_climate = merge_csv(merge_folder_path='data/daily_climate', save_file_name='daily_climate_data.csv')
+	is_merge_hourly_climate = merge_csv(merge_folder_path='data/hourly_climate', save_file_name='hourly_climate_data.csv')
+	return is_merge_daily_climate, is_merge_hourly_climate
 
 def delete_csv(file_name):
 	file_path = 'data/' + file_name

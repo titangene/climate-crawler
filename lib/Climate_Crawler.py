@@ -36,9 +36,9 @@ class Climate_Crawler:
 			# 儲存爬蟲 log
 			self.climate_crawler_Log.save_climate_crawler_log(self.log_df)
 			# 合併氣候資料
-			merge_daily_climate, merge_hourly_climate = merge_climate_data_to_csv()
-			print('daily_climate merge Success:', merge_daily_climate)
-			print('hourly_climate merge Success:', merge_hourly_climate)
+			is_merge_daily_climate, is_merge_hourly_climate = merge_climate_data_to_csv()
+			print('daily_climate merge Success:', is_merge_daily_climate)
+			print('hourly_climate merge Success:', is_merge_hourly_climate)
 			# 儲存 日 和 小時 氣候資料
 			self.to_mssql.save_daily_and_hourly_data()
 			# 關閉資料庫連線
