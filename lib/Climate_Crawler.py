@@ -49,29 +49,22 @@ class Climate_Crawler:
 	def is_latest_data(self):
 		is_hourly_latest_data = Climate_Common.is_today(self.log_df['New_Hourly_Start_Period']).all()
 		is_daily_latest_data = Climate_Common.is_today(self.log_df['New_Daily_Start_Period']).all()
-		print('hourly 是否有最新資料:', is_hourly_latest_data, '| daily 是否有最新資料:', is_daily_latest_data)
 		return is_hourly_latest_data and is_daily_latest_data
 
 	def get_climate_data(self, log_df):
 		for station_id, row in self.station_df.iterrows():
 			# 爬蟲 log 內是否有此 station_id 紀錄
 			if station_id in log_df.index:
-				print('# with crawler log:', station_id, row['station_area'], '==================')
 				temp_row = log_df.loc[station_id]
-				print('old last daily:', temp_row['Daily_End_Period'], '| old last hourly:', temp_row['Hourly_End_Period'])
 				# 抓最新的氣候資料
 				temp_row = self.get_recent_climate_data(temp_row, station_id)
 			else:
-				print('# without crawler log:', station_id, row['station_area'], '==================')
 				station_area = row['station_area']
 				# 抓三年前 2015-1-1 ~ 當天的昨天 期間的所有氣候資料
 				temp_row = self.get_three_years_ago_climate_data(station_id, station_area)
 
 			if temp_row is not None:
 				log_df.loc[station_id] = temp_row
-			print('\n# log_df:')
-			print(log_df)
-			print('\n===============================\n')
 		return log_df
 
 	# 抓最新的氣候資料 (抓爬蟲 log 之後的新資料)
@@ -86,23 +79,16 @@ class Climate_Crawler:
 
 		daily_periods = Climate_Common.get_month_periods(daily_start_period, daily_end_period)
 		hourly_periods = Climate_Common.get_day_periods(hourly_start_period, hourly_end_period)
-		print('daily periods:', daily_periods)
-		print('hourly periods:', hourly_periods)
 
 		filter_period = temp_row['New_Daily_Start_Period']
-		print('filter period:', filter_period)
 
 		daily_record_start_period, daily_record_end_period = \
 				self.daily_crawler.get_station_climate_data(station_id, daily_periods, filter_period)
 		hourly_record_start_period, hourly_record_end_period = \
 				self.hourly_crawler.get_station_climate_data(station_id, hourly_periods)
-		print('record daily crawler: {} ~ {}'.format(daily_record_start_period, daily_record_end_period))
-		print('record hourly crawler: {} ~ {}\n'.format(hourly_record_start_period, hourly_record_end_period))
 
 		is_daily_record_period = self.is_record_period(daily_record_start_period, daily_record_end_period)
 		is_hourly_record_period = self.is_record_period(hourly_record_start_period, hourly_record_end_period)
-		print('is_daily_record_period:', is_daily_record_period)
-		print('is_hourly_record_period:', is_hourly_record_period)
 
 		if is_daily_record_period:
 			temp_row['New_Daily_Start_Period'] = daily_record_start_period
@@ -129,20 +115,14 @@ class Climate_Crawler:
 
 		daily_periods = Climate_Common.get_month_periods(daily_start_period, daily_end_period)
 		hourly_periods = Climate_Common.get_day_periods(hourly_start_period, hourly_end_period)
-		print('daily periods:', daily_periods)
-		print('hourly periods:', hourly_periods)
 
 		daily_record_start_period, daily_record_end_period = \
 				self.daily_crawler.get_station_climate_data(station_id, daily_periods)
 		hourly_record_start_period, hourly_record_end_period = \
 				self.hourly_crawler.get_station_climate_data(station_id, hourly_periods)
-		print('record daily crawler: {} ~ {}'.format(daily_record_start_period, daily_record_end_period))
-		print('record hourly crawler: {} ~ {}\n'.format(hourly_record_start_period, hourly_record_end_period))
 
 		is_daily_record_period = self.is_record_period(daily_record_start_period, daily_record_end_period)
 		is_hourly_record_period = self.is_record_period(hourly_record_start_period, hourly_record_end_period)
-		print('is_daily_record_period:', is_daily_record_period)
-		print('is_hourly_record_period:', is_hourly_record_period)
 
 		if not is_daily_record_period and not is_hourly_record_period:
 			return None
