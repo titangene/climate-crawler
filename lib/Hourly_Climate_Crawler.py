@@ -16,8 +16,9 @@ class Hourly_Climate_Crawler:
 		climate_df = pd.DataFrame()
 		record_start_period = None
 		record_end_period = None
+		number_of_crawls = 0
 
-		for period_idx, period in enumerate(periods):
+		for period in periods:
 			hourly_climate_url = self.climate_station.get_hourly_full_url(period, station_id)
 			temp_df = self.catch_climate_data(hourly_climate_url)
 
@@ -29,9 +30,10 @@ class Hourly_Climate_Crawler:
 
 			# 記錄爬蟲 log (最後一筆的 Reporttime)
 			if self.is_twenty_three_oclock(temp_df):
-				if period_idx == 0:
+				if number_of_crawls == 0:
 					record_start_period = period
 
+				number_of_crawls += 1
 				record_end_period = period
 			else:
 				break

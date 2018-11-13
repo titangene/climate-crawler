@@ -16,8 +16,9 @@ class Daily_Climate_Crawler:
 		climate_df = pd.DataFrame()
 		record_start_period = None
 		record_end_period = None
+		number_of_crawls = 0
 
-		for period_idx, period in enumerate(periods):
+		for period in periods:
 			daily_climate_url = self.climate_station.get_daily_full_url(period, station_id)
 			temp_df = self.catch_climate_data(daily_climate_url)
 
@@ -32,9 +33,10 @@ class Daily_Climate_Crawler:
 				break
 
 			# 記錄爬蟲 log
-			if period_idx == 0:
+			if number_of_crawls == 0:
 				record_start_period = self.record_crawler_log_start_period(temp_df)
 
+			number_of_crawls += 1
 			record_end_period = self.record_crawler_log_end_period(temp_df)
 
 			climate_df = pd.concat([climate_df, temp_df], ignore_index=True)
