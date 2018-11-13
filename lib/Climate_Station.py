@@ -2,21 +2,25 @@ import pandas as pd
 import numpy as np
 from urllib.parse import quote
 
+from lib.csv.csv_process import load_csv
+
 class Climate_Station:
 	def __init__(self):
-		self.base_url = 'https://e-service.cwb.gov.tw/HistoryDataQuery'
-		self.hourly_url = self.base_url + '/DayDataController.do?command=viewMain'
-		self.daily_url = self.base_url + '/MonthDataController.do?command=viewMain'
+		self.base_url = 'https://e-service.cwb.gov.tw/HistoryDataQuery/'
+		self.hourly_url = self.base_url + 'DayDataController.do?command=viewMain'
+		self.daily_url = self.base_url + 'MonthDataController.do?command=viewMain'
+
 		self.station_df = self.read_station_csv_to_df()
 		self.station_id_list = self.get_station_id_list()
+		self.station_df = self.init_columns(self.station_df)
 
-		self.station_df['stname'] = self.station_df['station_name'].apply(lambda name: self.set_stname(name))
-		self.station_df['station_area'] = self.station_df.index.map(lambda id: self.set_station_area(id))
+	def init_columns(self, station_df):
+		station_df['stname'] = station_df['station_name'].apply(lambda name: self.set_stname(name))
+		station_df['station_area'] = station_df.index.map(lambda id: self.set_station_area(id))
+		return station_df
 
-	# 讀取觀測站 csv
 	def read_station_csv_to_df(self):
-		climate_station_df = pd.read_csv('data/climate_station.csv')
-		climate_station_df.set_index('station_id', inplace=True)
+		climate_station_df = load_csv('climate_station.csv').set_index('station_id')
 		return climate_station_df
 
 	# 取得所有觀測站 id

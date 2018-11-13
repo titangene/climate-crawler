@@ -3,6 +3,8 @@ from pandas.io.sql import SQLDatabase, SQLTable
 import pandas as pd
 import numpy as np
 
+from lib.csv.csv_process import load_csv
+
 class csv_to_mssql:
 	def __init__(self):
 		self.host_ip, self.db_name = self.set_db_config()
@@ -25,22 +27,17 @@ class csv_to_mssql:
 		url = self.set_sql_url()
 		return create_engine(url)
 
-	def load_csv(self, csv_name):
-		doc_name = 'data/'+ csv_name
-		dataSet = pd.read_csv(doc_name)
-		return dataSet
-
 	def disconnect(self):
 		self.sql_engine.dispose()
 
 	# 儲存 日 氣候資料
 	def save_daily_data(self, table_name, csv_name, if_exists='append'):
-		dataSet = self.load_csv(csv_name)
+		dataSet = load_csv(csv_name)
 		self.to_sql(dataSet, table_name, if_exists)
 
 	# 儲存 小時 氣候資料
 	def save_hourly_data(self, table_name, csv_name, if_exists='append'):
-		dataSet = self.load_csv(csv_name)
+		dataSet = load_csv(csv_name)
 		self.to_sql(dataSet, table_name, if_exists)
 
 	def to_sql(self, dataSet, table_name, if_exists, dtype=None, keys=None, sql_table=None):
