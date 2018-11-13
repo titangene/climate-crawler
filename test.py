@@ -46,7 +46,7 @@ def simulation_with_crawler_log(to_mssql):
 	log_df['Station_ID'] = log_df['Station_ID'].astype(str)
 
 	climate_crawler_Log = Climate_Crawler_Log(to_mssql)
-	climate_crawler_Log.save_climate_crawler_log(log_df)
+	climate_crawler_Log.save_log(log_df)
 	print('\n# simulation: \nlast climate crawler log:')
 	print(log_df)
 
