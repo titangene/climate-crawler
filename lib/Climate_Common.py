@@ -31,3 +31,7 @@ def get_begin_three_years_ago():
 	today_time = pd.Timestamp.now()
 	begin_three_years_ago = today_time.year - 3
 	return '{}-01-01'.format(begin_three_years_ago)
+
+def get_current_time():
+	today_time = pd.Timestamp.now()
+	return today_time.strftime('%Y-%m-%d-%H-%M-%S')
