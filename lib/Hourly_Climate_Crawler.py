@@ -41,6 +41,8 @@ class Hourly_Climate_Crawler:
 		file_name = 'hourly_climate/data_{}.csv'.format(station_id)
 		if climate_df.empty:
 			csv_process.delete_csv(file_name)
+			record_start_period = None
+			record_end_period = None
 		else:
 			csv_process.to_csv(climate_df, file_name)
 		return record_start_period, record_end_period
