@@ -12,6 +12,7 @@ class Daily_Climate_Crawler:
 		self.reserved_columns = ['Temperature', 'Max_T', 'Min_T', 'Humidity', 'SunShine_hr', 'SunShine_MJ']
 
 	def get_station_climate_data(self, station_id, periods, filter_period=None):
+		print('---------- daily climate crawler: Start ---------')
 		station_area = self.climate_station.get_station_area(station_id)
 		climate_df = pd.DataFrame()
 		record_start_period = None
@@ -24,12 +25,14 @@ class Daily_Climate_Crawler:
 
 			# 如果沒有任何資料就不儲存
 			if temp_df is None:
+				print(period, station_id, station_area, 'None')
 				break
 
 			temp_df = self.data_preprocess(temp_df, period, station_area, filter_period)
 
 			# 過濾資料後，如果沒有任何資料就不儲存
 			if temp_df.empty:
+				print(period, station_id, station_area, 'filter None')
 				break
 
 			# 記錄爬蟲 log
@@ -40,6 +43,7 @@ class Daily_Climate_Crawler:
 			record_end_period = self.record_crawler_log_end_period(temp_df)
 
 			climate_df = pd.concat([climate_df, temp_df], ignore_index=True)
+			print(period, station_id, station_area, 'record: {} ~ {}'.format(record_start_period, record_end_period))
 
 		file_name = 'daily_climate/data_{}.csv'.format(station_id)
 		if climate_df.empty:
@@ -48,6 +52,7 @@ class Daily_Climate_Crawler:
 			record_end_period = None
 		else:
 			csv_process.to_csv(climate_df, file_name)
+		print('---------- daily climate crawler: End -----------')
 		return record_start_period, record_end_period
 
 	def data_preprocess(self, df, period, station_area, filter_period):
@@ -75,6 +80,7 @@ class Daily_Climate_Crawler:
 	def filter_out_duplicate_data(self, df, filter_period):
 		# 只留需要的日期區間
 		period_month_end = (pd.Timestamp(filter_period) + pd.offsets.MonthEnd(0)).strftime('%Y-%m-%d')
+		print('filter: {} ~ {}'.format(filter_period, period_month_end))
 		maskTime = df['Reporttime'].between(filter_period, period_month_end)
 		temp_df = df[maskTime]
 		return temp_df

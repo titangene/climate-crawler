@@ -12,6 +12,7 @@ class Hourly_Climate_Crawler:
 		self.reserved_columns = ['Temperature', 'Humidity', 'SunShine_hr', 'SunShine_MJ']
 
 	def get_station_climate_data(self, station_id, periods):
+		print('--------- hourly climate crawler: Start ---------')
 		station_area = self.climate_station.get_station_area(station_id)
 		climate_df = pd.DataFrame()
 		record_start_period = None
@@ -24,6 +25,7 @@ class Hourly_Climate_Crawler:
 
 			# 如果沒有任何資料就不儲存
 			if temp_df is None:
+				print(period, station_id, station_area, 'None')
 				break
 
 			temp_df = self.data_preprocess(temp_df, period, station_area)
@@ -39,6 +41,7 @@ class Hourly_Climate_Crawler:
 				break
 
 			climate_df = pd.concat([climate_df, temp_df], ignore_index=True)
+			print(period, station_id, station_area, 'record: {} ~ {}'.format(record_start_period, record_end_period))
 
 		file_name = 'hourly_climate/data_{}.csv'.format(station_id)
 		if climate_df.empty:
@@ -47,6 +50,7 @@ class Hourly_Climate_Crawler:
 			record_end_period = None
 		else:
 			csv_process.to_csv(climate_df, file_name)
+		print('--------- hourly climate crawler: End -----------')
 		return record_start_period, record_end_period
 
 	def data_preprocess(self, df, period, station_area):
