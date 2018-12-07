@@ -28,22 +28,23 @@ class Climate_Crawler:
 	def start(self):
 		if not self.log_df.empty and self.is_latest_data():
 			print('已有最新資料，不必抓新資料')
-		else:
-			# 抓最新的氣候資料 (抓爬蟲 log 之後的新資料)
-			self.log_df = self.get_climate_data(self.log_df)
-			# 更新爬蟲 log dataFrame
-			self.log_df = self.climate_crawler_Log.update_log_dataFrame(self.log_df)
-			# 儲存爬蟲 log
-			self.climate_crawler_Log.save_log(self.log_df)
-			# 合併氣候資料
-			# return: 合併氣候資料是否成功 (type: bool)
-			is_merge_daily_climate, is_merge_hourly_climate = merge_climate_data_to_csv()
-			print('daily_climate merge Success:', is_merge_daily_climate)
-			print('hourly_climate merge Success:', is_merge_hourly_climate)
-			# 儲存 日 和 小時 氣候資料
-			self.to_mssql.save_daily_and_hourly_data()
-			# 關閉資料庫連線
-			self.to_mssql.disconnect()
+			return
+
+		# 抓最新的氣候資料 (抓爬蟲 log 之後的新資料)
+		self.log_df = self.get_climate_data(self.log_df)
+		# 更新爬蟲 log dataFrame
+		self.log_df = self.climate_crawler_Log.update_log_dataFrame(self.log_df)
+		# 儲存爬蟲 log
+		self.climate_crawler_Log.save_log(self.log_df)
+		# 合併氣候資料
+		# return: 合併氣候資料是否成功 (type: bool)
+		is_merge_daily_climate, is_merge_hourly_climate = merge_climate_data_to_csv()
+		print('daily_climate merge Success:', is_merge_daily_climate)
+		print('hourly_climate merge Success:', is_merge_hourly_climate)
+		# 儲存 日 和 小時 氣候資料
+		self.to_mssql.save_daily_and_hourly_data()
+		# 關閉資料庫連線
+		self.to_mssql.disconnect()
 
 	# 是否有最新的氣候資料
 	def is_latest_data(self):
