@@ -1,9 +1,22 @@
 import os
+import re
 
 import numpy as np
 import pandas as pd
 
 from lib.Climate_Common import get_current_time
+
+def createFolder(directory):
+	try:
+		if not os.path.exists(directory):
+			os.makedirs(directory)
+			print('create directory:', directory)
+	except OSError:
+		print('Error: Creating directory:', directory)
+
+def get_file_folder_path(file_path):
+	regex_match = re.search(r'data\/?.*\/', file_path)
+	return regex_match.group()
 
 def set_data_path(csv_name):
 	file_path = 'data/'+ csv_name
@@ -16,6 +29,8 @@ def load_csv(csv_name):
 
 def to_csv(dataSet, csv_name, mode='w', header=True, backup=False):
 	file_path = set_data_path(csv_name)
+	file_folder_path = get_file_folder_path(file_path)
+	createFolder(file_folder_path)
 	dataSet.to_csv(file_path, encoding='utf-8', index=False, mode=mode, header=header)
 	if mode != 'a':
 		print('==== The ' + file_path, 'is saved ====')
@@ -25,6 +40,7 @@ def to_csv(dataSet, csv_name, mode='w', header=True, backup=False):
 def to_csv_backup(dataSet, csv_name):
 	current_time = get_current_time()
 	file_path = 'data/backup/{}_{}'.format(current_time, csv_name)
+	createFolder('data/backup')
 	dataSet.to_csv(file_path, encoding='utf-8', index=False)
 
 def merge_csv(merge_folder_path, save_file_name):
