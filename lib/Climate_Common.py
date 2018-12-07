@@ -16,16 +16,16 @@ def is_today(date_str):
 
 def add_one_day_str(date_str):
 	add_one_time = pd.Timestamp(date_str) + pd.DateOffset(1)
-	return add_one_time.date().strftime('%Y-%m-%d')
+	return add_one_time.strftime('%Y-%m-%d')
 
 def get_yesterday_date_str():
 	today_time = pd.Timestamp.now()
 	yesterday_time = today_time - pd.DateOffset(1)
-	return yesterday_time.date().strftime('%Y-%m-%d')
+	return yesterday_time.strftime('%Y-%m-%d')
 
 def get_today_str():
 	today_time = pd.Timestamp.now()
-	return today_time.date().strftime('%Y-%m-%d')
+	return today_time.strftime('%Y-%m-%d')
 
 def get_begin_three_years_ago():
 	today_time = pd.Timestamp.now()
