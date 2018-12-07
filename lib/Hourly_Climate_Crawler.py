@@ -76,27 +76,30 @@ class Hourly_Climate_Crawler:
 		data_info = soup.find(class_='imp').text
 		if data_info == '本段時間區間內無觀測資料。':
 			return None
-		else:
-			# 保留欄位德 index
-			reserved_columns_index = [0, 3, 5, 12, 13]
-			# return: {0: 'Day', 3: 'Temperature', 5: 'Humidity', ... }
-			rename_columns = dict(zip(reserved_columns_index, ['Hour'] + self.reserved_columns))
 
-			# iloc[3:, reserved_columns_index] 中的 '3:' 是刪除前 3 列 (index: 0 ~ 2)
-			# 將資料內的 '/' 和 'X' 設為 NA
-			# 只要 subset 這些欄位全部都 NA 才 drop
-			climate_table = soup.find(id='MyTable')
-			climate_df = pd.read_html(str(climate_table))[0]\
-						   .iloc[3:, reserved_columns_index]\
-						   .rename(columns=rename_columns)\
-						   .replace('/', np.nan)\
-							 .replace('X', np.nan) \
-							 .replace('...', np.nan)\
-						   .dropna(subset=self.reserved_columns, how='all')
+		# 保留欄位德 index
+		reserved_columns_index = [0, 3, 5, 12, 13]
+		# return: {0: 'Day', 3: 'Temperature', 5: 'Humidity', ... }
+		rename_columns = dict(zip(reserved_columns_index, ['Hour'] + self.reserved_columns))
 
-			if climate_df.empty:
-				return None
+		# iloc[3:, reserved_columns_index] 中的 '3:' 是刪除前 3 列 (index: 0 ~ 2)
+		# 將資料內的 '/' 和 'X' 設為 NA
+		# 只要 subset 這些欄位全部都 NA 才 drop
+		climate_table = soup.find(id='MyTable')
+		climate_df = pd.read_html(str(climate_table))[0]\
+							.iloc[3:, reserved_columns_index]\
+							.rename(columns=rename_columns)\
+							.replace('/', np.nan)\
+							.replace('X', np.nan) \
+							.replace('...', np.nan)\
+							.dropna(subset=self.reserved_columns, how='all')
 
-			# 將 Hour 欄位原本的 1 ~ 24 改成 '00' ~ '23'
-			climate_df['Hour'] = list(map(lambda hour: str(hour).zfill(2), range(0, 24)))
-			return climate_df
+		if climate_df.empty:
+			return None
+
+		# 將 Hour 欄位原本的 1 ~ 24 改成 '00' ~ '23'
+		climate_df['Hour'] = list(map(self.set_hour_str(), list(climate_df['Hour'])))
+		return climate_df
+
+	def set_hour_str(self):
+		return lambda hour: str(int(hour) - 1).zfill(2)
