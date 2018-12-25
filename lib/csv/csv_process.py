@@ -23,9 +23,9 @@ def set_data_path(csv_name):
 	return file_path
 
 def load_csv(csv_name):
-		file_path = set_data_path(csv_name)
-		dataSet = pd.read_csv(file_path)
-		return dataSet
+	file_path = set_data_path(csv_name)
+	dataSet = pd.read_csv(file_path)
+	return dataSet
 
 def to_csv(dataSet, csv_name, mode='w', header=True, backup=False):
 	file_path = set_data_path(csv_name)

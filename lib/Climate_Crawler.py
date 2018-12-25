@@ -26,13 +26,13 @@ class Climate_Crawler:
 		self.three_years_ago_hourly_start_period = Climate_Common.get_begin_three_years_ago()
 
 	def start(self):
-		if not self.log_df.empty and self.is_latest_data():
-			print('已有最新資料，不必抓新資料')
+		if self.is_latest_data():
+			print('已有最新資料，不必擷取新資料')
 			return
 
 		print('\n# init log_df:')
 		print(self.log_df, '\n')
-		# 抓最新的氣候資料 (抓爬蟲 log 之後的新資料)
+		# 擷取氣候資料
 		self.log_df = self.get_climate_data(self.log_df)
 		print('\n# get_climate_data:')
 		print(self.log_df)
@@ -60,6 +60,7 @@ class Climate_Crawler:
 		print('hourly 是否有最新資料:', is_hourly_latest_data, '| daily 是否有最新資料:', is_daily_latest_data)
 		return is_hourly_latest_data and is_daily_latest_data
 
+	# 擷取氣候資料
 	def get_climate_data(self, log_df):
 		for station_id, row in self.station_df.iterrows():
 			# 爬蟲 log 內是否有此 station_id 紀錄
@@ -67,12 +68,12 @@ class Climate_Crawler:
 				print('# with crawler log:', station_id, row['station_area'], '==================')
 				temp_row = log_df.loc[station_id]
 				print('old last daily:', temp_row['Daily_End_Period'], '| old last hourly:', temp_row['Hourly_End_Period'])
-				# 抓最新的氣候資料
-				temp_row = self.get_recent_climate_data(temp_row, station_id)
+				# 擷取最新的氣候資料
+				temp_row = self.get_latest_climate_data(temp_row, station_id)
 			else:
 				print('# without crawler log:', station_id, row['station_area'], '==================')
 				station_area = row['station_area']
-				# 抓三年前 2015-1-1 ~ 當天的昨天 期間的所有氣候資料
+				# 擷取三年前 2015-1-1 ~ 當天的昨天 期間的所有氣候資料
 				temp_row = self.get_three_years_ago_climate_data(station_id, station_area)
 
 			if temp_row is not None:
@@ -82,10 +83,11 @@ class Climate_Crawler:
 			print('\n===============================\n')
 		return log_df
 
-	# 抓最新的氣候資料 (抓爬蟲 log 之後的新資料)
-	def get_recent_climate_data(self, temp_row, station_id):
+	# 擷取最新的氣候資料：
+	# 擷取爬蟲 log 紀錄之後所要擷取的新氣候資料
+	def get_latest_climate_data(self, temp_row, station_id):
 		temp_row = temp_row.copy()
-		# 計算爬蟲要抓資料的時間範圍
+		# 計算爬蟲要擷取資料的時段
 		# e.g. 將 '2018-10-05' 變成 '2018-10'，只取年月
 		daily_start_period = temp_row['New_Daily_Start_Period'][:-3]
 		daily_end_period = temp_row['New_Daily_End_Period'][:-3]
@@ -125,9 +127,9 @@ class Climate_Crawler:
 
 		return temp_row
 
-	# 抓三年前 2015-1-1 ~ 當天的昨天 期間的所有氣候資料
+	# 擷取三年前 2015-1-1 ~ 當天的昨天 期間的所有氣候資料
 	def get_three_years_ago_climate_data(self, station_id, station_area):
-		print('如果 DB 為空，需要抓 三年前 2015-1-1 ~ 該天的昨天 期間的所有氣候資料')
+		print('如果 DB 為空，需要擷取 三年前 2015-1-1 ~ 該天的昨天 期間的所有氣候資料')
 		yesterday_str = Climate_Common.get_yesterday_date_str()
 
 		daily_start_period = self.three_years_ago_daily_start_period
