@@ -90,9 +90,8 @@ class Hourly_Climate_Crawler:
 							.iloc[3:, reserved_columns_index]\
 							.rename(columns=rename_columns)\
 							.replace('/', np.nan)\
-							.replace('X', np.nan) \
-							.replace('...', np.nan)\
-							.dropna(subset=self.reserved_columns, how='all')
+							.replace('X', np.nan)\
+							.replace('...', np.nan)
 
 		if climate_df.empty:
 			return None
