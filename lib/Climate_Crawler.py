@@ -26,7 +26,7 @@ class Climate_Crawler:
 		self.three_years_ago_hourly_start_period = Climate_Common.get_begin_three_years_ago()
 
 	def start(self):
-		if self.is_latest_data():
+		if not self.log_df.empty and self.is_latest_data():
 			print('已有最新資料，不必擷取新資料')
 			return
 
