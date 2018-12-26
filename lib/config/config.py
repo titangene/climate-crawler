@@ -50,3 +50,13 @@ class Config:
 			return crawler_start_year
 		else:
 			raise ValueError('config.ini 內的 [crawler_start_period] year 變數必須是 >= 2010，且 <= 今年')
+
+	# 取得 要擷取的縣市的氣候資料
+	def get_crawler_cities(self):
+		crawler_cities = self.config['crawler']['cities']
+		# 代表擷取所有縣市的氣候資料
+		if crawler_cities == 'all':
+			return crawler_cities
+		# 代表只擷取一個或多個縣市的氣候資料
+		else:
+			return crawler_cities.split()

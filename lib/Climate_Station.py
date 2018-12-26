@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from urllib.parse import quote
 
+from lib.config.config import Config
 from lib.csv.csv_process import load_csv
 
 class Climate_Station:
@@ -11,6 +12,7 @@ class Climate_Station:
 		self.daily_url = self.base_url + 'MonthDataController.do?command=viewMain'
 
 		self.station_df = self.read_station_csv_to_df()
+		self.station_df = self.get_filter_station_df(self.station_df)
 		self.station_id_list = self.get_station_id_list()
 		self.station_df = self.init_columns(self.station_df)
 
@@ -22,6 +24,13 @@ class Climate_Station:
 	def read_station_csv_to_df(self):
 		climate_station_df = load_csv('climate_station.csv').set_index('station_id')
 		return climate_station_df
+
+	def get_filter_station_df(self, station_df):
+		crawler_cities = Config().get_crawler_cities()
+		if crawler_cities == 'all':
+			return station_df
+		else:
+			return station_df[station_df['location'].isin(crawler_cities)]
 
 	# 取得所有觀測站 id
 	def get_station_id_list(self):
