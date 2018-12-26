@@ -1,3 +1,5 @@
+import logging
+
 import pandas as pd
 import numpy as np
 
@@ -24,6 +26,9 @@ class Climate_Crawler:
 
 		self.recent_climate_data_daily_start_period = Climate_Common.get_recent_climate_data_start_period()[:-3]
 		self.recent_climate_data_hourly_start_period = Climate_Common.get_recent_climate_data_start_period()
+
+		FORMAT = '%(asctime)s %(levelname)s: %(message)s'
+		logging.basicConfig(handlers=[logging.FileHandler('data/crawler.log', 'w', 'utf-8')], format=FORMAT, level=logging.INFO)
 
 	def start(self):
 		if not self.log_df.empty and self.is_latest_data():

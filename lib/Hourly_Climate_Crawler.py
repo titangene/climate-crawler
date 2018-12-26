@@ -1,3 +1,5 @@
+import logging
+
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
@@ -44,6 +46,8 @@ class Hourly_Climate_Crawler:
 				record_end_period = period
 			else:
 				break
+
+			logging.info('{} hourly {}'.format(station_area, period))
 
 			climate_df = pd.concat([climate_df, temp_df], ignore_index=True)
 			print(period, station_id, station_area, 'record: {} ~ {}'.format(record_start_period, record_end_period))

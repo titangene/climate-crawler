@@ -1,3 +1,5 @@
+import logging
+
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
@@ -46,6 +48,8 @@ class Daily_Climate_Crawler:
 
 			number_of_crawls += 1
 			record_end_period = self.record_crawler_log_end_period(temp_df)
+
+			logging.info('{} daily {}'.format(station_area, period))
 
 			climate_df = pd.concat([climate_df, temp_df], ignore_index=True)
 			print(period, station_id, station_area, 'record: {} ~ {}'.format(record_start_period, record_end_period))
