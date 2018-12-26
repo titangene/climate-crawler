@@ -18,6 +18,7 @@ class Hourly_Climate_Crawler:
 		record_start_period = None
 		record_end_period = None
 		number_of_crawls = 0
+		file_name = 'hourly_climate/data_{}.csv'.format(station_id)
 
 		for period in periods:
 			hourly_climate_url = self.climate_station.get_hourly_full_url(period, station_id)
@@ -40,16 +41,19 @@ class Hourly_Climate_Crawler:
 			else:
 				break
 
+			if number_of_crawls == 0:
+				csv_process.to_csv(temp_df, file_name)
+
+			if number_of_crawls > 0:
+				csv_process.to_csv(temp_df, file_name, mode='a', header=False)
+
 			climate_df = pd.concat([climate_df, temp_df], ignore_index=True)
 			print(period, station_id, station_area, 'record: {} ~ {}'.format(record_start_period, record_end_period))
 
-		file_name = 'hourly_climate/data_{}.csv'.format(station_id)
 		if climate_df.empty:
 			csv_process.delete_csv(file_name)
 			record_start_period = None
 			record_end_period = None
-		else:
-			csv_process.to_csv(climate_df, file_name)
 		print('--------- hourly climate crawler: End -----------')
 		return record_start_period, record_end_period
 

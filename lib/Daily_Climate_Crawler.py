@@ -18,6 +18,7 @@ class Daily_Climate_Crawler:
 		record_start_period = None
 		record_end_period = None
 		number_of_crawls = 0
+		file_name = 'daily_climate/data_{}.csv'.format(station_id)
 
 		for period in periods:
 			daily_climate_url = self.climate_station.get_daily_full_url(period, station_id)
@@ -38,6 +39,10 @@ class Daily_Climate_Crawler:
 			# 記錄爬蟲 log
 			if number_of_crawls == 0:
 				record_start_period = self.record_crawler_log_start_period(temp_df)
+				csv_process.to_csv(temp_df, file_name)
+
+			if number_of_crawls > 0:
+				csv_process.to_csv(temp_df, file_name, mode='a', header=False)
 
 			number_of_crawls += 1
 			record_end_period = self.record_crawler_log_end_period(temp_df)
@@ -45,13 +50,10 @@ class Daily_Climate_Crawler:
 			climate_df = pd.concat([climate_df, temp_df], ignore_index=True)
 			print(period, station_id, station_area, 'record: {} ~ {}'.format(record_start_period, record_end_period))
 
-		file_name = 'daily_climate/data_{}.csv'.format(station_id)
 		if climate_df.empty:
 			csv_process.delete_csv(file_name)
 			record_start_period = None
 			record_end_period = None
-		else:
-			csv_process.to_csv(climate_df, file_name)
 		print('---------- daily climate crawler: End -----------')
 		return record_start_period, record_end_period
 
