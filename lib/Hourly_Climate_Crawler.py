@@ -35,17 +35,15 @@ class Hourly_Climate_Crawler:
 			if self.is_twenty_three_oclock(temp_df):
 				if number_of_crawls == 0:
 					record_start_period = period
+					csv_process.to_csv(temp_df, file_name)
+
+				if number_of_crawls > 0:
+					csv_process.to_csv(temp_df, file_name, mode='a', header=False)
 
 				number_of_crawls += 1
 				record_end_period = period
 			else:
 				break
-
-			if number_of_crawls == 0:
-				csv_process.to_csv(temp_df, file_name)
-
-			if number_of_crawls > 0:
-				csv_process.to_csv(temp_df, file_name, mode='a', header=False)
 
 			climate_df = pd.concat([climate_df, temp_df], ignore_index=True)
 			print(period, station_id, station_area, 'record: {} ~ {}'.format(record_start_period, record_end_period))
