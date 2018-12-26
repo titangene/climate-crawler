@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 
+from lib.config.config import Config
+
 # e.g. get_month_periods(start_period='2017-11', end_period='2018-2')
 # output: ['2017-11', '2017-12', '2018-01']
 def get_month_periods(start_period, end_period):
@@ -27,10 +29,22 @@ def get_today_str():
 	today_time = pd.Timestamp.now()
 	return today_time.strftime('%Y-%m-%d')
 
-def get_begin_three_years_ago():
-	today_time = pd.Timestamp.now()
-	begin_three_years_ago = today_time.year - 3
-	return '{}-01-01'.format(begin_three_years_ago)
+# 取得 擷取近期的氣候資料的起始時段
+def get_recent_climate_data_start_period():
+	config = Config()
+	crawler_start_default = config.get_crawler_start_period_default()
+
+	if crawler_start_default == 'date':
+		crawler_start_date = config.get_crawler_start_date()
+		return pd.Timestamp(crawler_start_date).strftime('%Y-%m-%d')
+	elif crawler_start_default == 'months':
+		today_time = pd.Timestamp.now()
+		crawler_started_a_few_months_ago = config.get_crawler_started_a_few_months_ago()
+		started_a_few_months_ago = today_time - pd.DateOffset(months=crawler_started_a_few_months_ago)
+		return started_a_few_months_ago.strftime('%Y-%m-%d')
+	else:
+		crawler_start_year = config.get_crawler_starting_from_a_certain_year()
+		return '{}-01-01'.format(crawler_start_year)
 
 def get_current_time():
 	today_time = pd.Timestamp.now()

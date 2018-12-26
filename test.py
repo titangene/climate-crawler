@@ -62,8 +62,8 @@ def reduce_number_catch_climate_data(climate_crawler):
 	# 便於測試用，可指定抓特定觀測站的資料
 	climate_crawler.station_df = climate_crawler.station_df.head(3)
 	# 便於測試用，可指定當某觀測站沒有紀錄爬蟲 log 時，預抓的資料時間範圍
-	climate_crawler.three_years_ago_daily_start_period = a_few_days_ago(month=1, day=3)[:-3]
-	climate_crawler.three_years_ago_hourly_start_period = a_few_days_ago(day=3)
+	climate_crawler.recent_climate_data_daily_start_period = a_few_days_ago(month=1, day=3)[:-3]
+	climate_crawler.recent_climate_data_hourly_start_period = a_few_days_ago(day=3)
 
 def get_db_climate_data_length(sql_engine):
 	select_sql_daily = 'SELECT * FROM Daily_Climate_data'
