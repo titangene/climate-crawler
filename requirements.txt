@@ -5,3 +5,4 @@ pandas==0.23.4
 pyodbc==4.0.24
 requests==2.20.0
 SQLAlchemy==1.2.11
+fake-useragent==0.1.11

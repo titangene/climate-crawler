@@ -1,11 +1,11 @@
 import logging
 
 from bs4 import BeautifulSoup
-import requests
 import pandas as pd
 import numpy as np
 
 import lib.Climate_Common as Climate_Common
+import lib.Request as Request
 from lib.csv import csv_process
 
 class Daily_Climate_Crawler:
@@ -102,7 +102,7 @@ class Daily_Climate_Crawler:
 		return record_end_period
 
 	def catch_climate_data(self, url):
-		req = requests.get(url, verify=False)
+		req = Request.get(url)
 		soup = BeautifulSoup(req.text, 'lxml')
 
 		data_info = soup.find(class_='imp').text

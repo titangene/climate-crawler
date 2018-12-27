@@ -2,15 +2,15 @@ import pandas as pd
 import numpy as np
 from bs4 import BeautifulSoup
 import json
-import requests
 import re
 
 from lib.csv import csv_process
+import lib.Request as Request
 
 class Station_Crawler:
 	def start(self):
 		url = 'https://e-service.cwb.gov.tw/HistoryDataQuery/QueryDataController.do?command=viewMain'
-		req = requests.get(url, verify=False)
+		req = Request.get(url)
 		soup = BeautifulSoup(req.text, 'html.parser')
 
 		js_str = soup.find_all("script")[-1].string

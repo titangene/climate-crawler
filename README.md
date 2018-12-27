@@ -9,6 +9,7 @@
 - [pyodbc](https://github.com/mkleehammer/pyodbc)
 - [requests](https://github.com/requests/requests)
 - [SQLAlchemy](https://github.com/zzzeek/sqlalchemy)
+- [fake-useragent](https://github.com/hellysmile/fake-useragent)
 
 ## Usage
 ### Create an environment
