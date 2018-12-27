@@ -9,7 +9,7 @@ import lib.Request as Request
 
 class Station_Crawler:
 	def start(self):
-		url = 'https://e-service.cwb.gov.tw/HistoryDataQuery/QueryDataController.do?command=viewMain'
+		url = 'http://e-service.cwb.gov.tw/HistoryDataQuery/QueryDataController.do?command=viewMain'
 		req = Request.get(url)
 		soup = BeautifulSoup(req.text, 'html.parser')
 

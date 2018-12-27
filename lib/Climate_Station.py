@@ -7,7 +7,7 @@ from lib.csv.csv_process import load_csv
 
 class Climate_Station:
 	def __init__(self):
-		self.base_url = 'https://e-service.cwb.gov.tw/HistoryDataQuery/'
+		self.base_url = 'http://e-service.cwb.gov.tw/HistoryDataQuery/'
 		self.hourly_url = self.base_url + 'DayDataController.do?command=viewMain'
 		self.daily_url = self.base_url + 'MonthDataController.do?command=viewMain'
 
