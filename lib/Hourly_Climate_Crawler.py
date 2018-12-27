@@ -76,7 +76,7 @@ class Hourly_Climate_Crawler:
 		return record_period.endswith('23:00')
 
 	def catch_climate_data(self, url):
-		req = requests.get(url)
+		req = requests.get(url, verify=False)
 		soup = BeautifulSoup(req.text, 'lxml')
 
 		data_info = soup.find(class_='imp').text

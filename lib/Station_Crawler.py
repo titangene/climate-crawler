@@ -10,7 +10,7 @@ from lib.csv import csv_process
 class Station_Crawler:
 	def start(self):
 		url = 'https://e-service.cwb.gov.tw/HistoryDataQuery/QueryDataController.do?command=viewMain'
-		req = requests.get(url)
+		req = requests.get(url, verify=False)
 		soup = BeautifulSoup(req.text, 'html.parser')
 
 		js_str = soup.find_all("script")[-1].string
