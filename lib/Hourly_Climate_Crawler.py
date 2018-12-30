@@ -37,20 +37,16 @@ class Hourly_Climate_Crawler:
 
 			climate_df = self.data_preprocess(climate_df, period, station_area)
 
-			# 記錄爬蟲 log (最後一筆的 Reporttime)
-			if self.is_twenty_three_oclock(climate_df):
-				if number_of_crawls == 0:
-					is_catch_any_data = True
-					record_start_period = period
-					csv_process.to_csv(climate_df, file_name)
+			if number_of_crawls == 0:
+				is_catch_any_data = True
+				record_start_period = period
+				csv_process.to_csv(climate_df, file_name)
 
-				if number_of_crawls > 0:
-					csv_process.to_csv(climate_df, file_name, mode='a', header=False)
+			if number_of_crawls > 0:
+				csv_process.to_csv(climate_df, file_name, mode='a', header=False)
 
-				number_of_crawls += 1
-				record_end_period = period
-			else:
-				continue
+			number_of_crawls += 1
+			record_end_period = period
 
 			self.save_data_to_db(climate_df)
 			logging.info('{} {} hourly {}'.format(station_id, station_area, period))
@@ -74,11 +70,6 @@ class Hourly_Climate_Crawler:
 		df = df.drop(['Hour'], axis=1)\
 			   .reindex(new_index, axis=1)
 		return df
-
-	# 是否有 23:00 這筆資料
-	def is_twenty_three_oclock(self, df):
-		record_period = df.iloc[-1]['Reporttime']
-		return record_period.endswith('23:00')
 
 	def catch_climate_data(self, url):
 		req = Request.get(url)
