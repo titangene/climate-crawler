@@ -29,7 +29,7 @@ class Hourly_Climate_Crawler:
 			# 如果沒有任何資料就不儲存
 			if temp_df is None:
 				print(period, station_id, station_area, 'None')
-				break
+				continue
 
 			temp_df = self.data_preprocess(temp_df, period, station_area)
 
@@ -45,7 +45,7 @@ class Hourly_Climate_Crawler:
 				number_of_crawls += 1
 				record_end_period = period
 			else:
-				break
+				continue
 
 			logging.info('{} hourly {}'.format(station_area, period))
 

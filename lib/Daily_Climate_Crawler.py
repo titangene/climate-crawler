@@ -29,14 +29,14 @@ class Daily_Climate_Crawler:
 			# 如果沒有任何資料就不儲存
 			if temp_df is None:
 				print(period, station_id, station_area, 'None')
-				break
+				continue
 
 			temp_df = self.data_preprocess(temp_df, period, station_area, filter_period)
 
 			# 過濾資料後，如果沒有任何資料就不儲存
 			if temp_df.empty:
 				print(period, station_id, station_area, 'filter None')
-				break
+				continue
 
 			# 記錄爬蟲 log
 			if number_of_crawls == 0:
