@@ -1,13 +1,14 @@
 import pandas as pd
 import numpy as np
 
+from lib.config.config import Config
 import lib.Climate_Common as Climate_Common
 
 class Climate_Crawler_Log:
 	def __init__(self, to_mssql):
 		self.to_mssql = to_mssql
 		self.sql_engine = self.to_mssql.sql_engine
-		self.table_name = 'climate_crawler_log'
+		self.table_name = Config().get_database_table_name_for_crawler_log()
 		self.period_columns = ['Daily_Start_Period', 'Daily_End_Period', 'Hourly_Start_Period', 'Hourly_End_Period']
 		self.new_period_columns = self.set_new_period_columns()
 		self.sql_columns = ['Station_ID', 'Station_Area', 'Reporttime'] + self.period_columns

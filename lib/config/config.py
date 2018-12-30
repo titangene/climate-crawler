@@ -60,3 +60,12 @@ class Config:
 		# 代表只擷取一個或多個縣市的氣候資料
 		else:
 			return crawler_cities.split()
+
+	def get_database_table_name_for_climate_daily_data(self):
+		return self.config['database_table_name']['climate_daily']
+
+	def get_database_table_name_for_climate_hourly_data(self):
+		return self.config['database_table_name']['climate_hourly']
+
+	def get_database_table_name_for_crawler_log(self):
+		return self.config['database_table_name']['crawler_log']

@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import numpy as np
 
+from lib.config.config import Config
 import lib.Climate_Common as Climate_Common
 import lib.Request as Request
 from lib.csv import csv_process
@@ -12,7 +13,7 @@ class Daily_Climate_Crawler:
 	def __init__(self, climate_station, to_mssql):
 		self.climate_station = climate_station
 		self.to_mssql = to_mssql
-		self.db_table_name = 'Daily_Climate_data'
+		self.db_table_name = Config().get_database_table_name_for_climate_daily_data()
 		self.reserved_columns = ['Temperature', 'Max_T', 'Min_T', 'Humidity', 'SunShine_hr', 'SunShine_MJ']
 
 	def get_station_climate_data(self, station_id, periods, filter_period=None):
