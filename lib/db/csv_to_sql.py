@@ -17,16 +17,6 @@ class csv_to_mssql:
 	def disconnect(self):
 		self.sql_engine.dispose()
 
-	# 儲存 日 氣候資料
-	def save_daily_data(self, table_name, csv_name, if_exists='append'):
-		dataSet = load_csv(csv_name)
-		self.to_sql(dataSet, table_name, if_exists)
-
-	# 儲存 小時 氣候資料
-	def save_hourly_data(self, table_name, csv_name, if_exists='append'):
-		dataSet = load_csv(csv_name)
-		self.to_sql(dataSet, table_name, if_exists)
-
 	def to_sql(self, dataSet, table_name, if_exists, dtype=None, keys=None, sql_table=None):
 		result = "This Dataset had been storaged in DB"
 		try:
@@ -67,8 +57,3 @@ class csv_to_mssql:
 		table.table = sql_table
 		table.create()
 		table.insert(chunksize)
-
-	# 儲存 日 和 小時 氣候資料
-	def save_daily_and_hourly_data(self):
-		self.save_daily_data(table_name='Daily_Climate_data', csv_name='daily_climate_data.csv')
-		self.save_hourly_data(table_name='Hourly_Climate_data', csv_name='hourly_climate_data.csv')

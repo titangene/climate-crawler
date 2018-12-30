@@ -9,50 +9,54 @@ import lib.Request as Request
 from lib.csv import csv_process
 
 class Hourly_Climate_Crawler:
-	def __init__(self, climate_station):
+	def __init__(self, climate_station, to_mssql):
 		self.climate_station = climate_station
+		self.to_mssql = to_mssql
+		self.db_table_name = 'Hourly_Climate_data'
 		self.reserved_columns = ['Temperature', 'Humidity', 'SunShine_hr', 'SunShine_MJ']
 
 	def get_station_climate_data(self, station_id, periods):
 		print('--------- hourly climate crawler: Start ---------')
 		station_area = self.climate_station.get_station_area(station_id)
-		climate_df = pd.DataFrame()
 		record_start_period = None
 		record_end_period = None
 		number_of_crawls = 0
 		file_name = 'hourly_climate/data_{}.csv'.format(station_id)
+		# 是否擷取到任何此觀測站的氣候資料
+		is_catch_any_data = False
 
 		for period in periods:
 			hourly_climate_url = self.climate_station.get_hourly_full_url(period, station_id)
-			temp_df = self.catch_climate_data(hourly_climate_url)
+			climate_df = self.catch_climate_data(hourly_climate_url)
 
 			# 如果沒有任何資料就不儲存
-			if temp_df is None:
+			if climate_df is None:
 				print(period, station_id, station_area, 'None')
 				continue
 
-			temp_df = self.data_preprocess(temp_df, period, station_area)
+			climate_df = self.data_preprocess(climate_df, period, station_area)
 
 			# 記錄爬蟲 log (最後一筆的 Reporttime)
-			if self.is_twenty_three_oclock(temp_df):
+			if self.is_twenty_three_oclock(climate_df):
 				if number_of_crawls == 0:
+					is_catch_any_data = True
 					record_start_period = period
-					csv_process.to_csv(temp_df, file_name)
+					csv_process.to_csv(climate_df, file_name)
 
 				if number_of_crawls > 0:
-					csv_process.to_csv(temp_df, file_name, mode='a', header=False)
+					csv_process.to_csv(climate_df, file_name, mode='a', header=False)
 
 				number_of_crawls += 1
 				record_end_period = period
 			else:
 				continue
 
-			logging.info('{} hourly {}'.format(station_area, period))
+			self.save_data_to_db(climate_df)
+			logging.info('{} {} hourly {}'.format(station_id, station_area, period))
 
-			climate_df = pd.concat([climate_df, temp_df], ignore_index=True)
 			print(period, station_id, station_area, 'record: {} ~ {}'.format(record_start_period, record_end_period))
 
-		if climate_df.empty:
+		if not is_catch_any_data:
 			csv_process.delete_csv(file_name)
 			record_start_period = None
 			record_end_period = None
@@ -105,6 +109,9 @@ class Hourly_Climate_Crawler:
 		# 將 Hour 欄位原本的 1 ~ 24 改成 '00' ~ '23'
 		climate_df['Hour'] = list(map(self.set_hour_str(), list(climate_df['Hour'])))
 		return climate_df
+
+	def save_data_to_db(self, dataSet):
+		self.to_mssql.to_sql(dataSet, self.db_table_name, if_exists='append')
 
 	def set_hour_str(self):
 		return lambda hour: str(int(hour) - 1).zfill(2)

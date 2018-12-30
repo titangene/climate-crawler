@@ -9,52 +9,56 @@ import lib.Request as Request
 from lib.csv import csv_process
 
 class Daily_Climate_Crawler:
-	def __init__(self, climate_station):
+	def __init__(self, climate_station, to_mssql):
 		self.climate_station = climate_station
+		self.to_mssql = to_mssql
+		self.db_table_name = 'Daily_Climate_data'
 		self.reserved_columns = ['Temperature', 'Max_T', 'Min_T', 'Humidity', 'SunShine_hr', 'SunShine_MJ']
 
 	def get_station_climate_data(self, station_id, periods, filter_period=None):
 		print('---------- daily climate crawler: Start ---------')
 		station_area = self.climate_station.get_station_area(station_id)
-		climate_df = pd.DataFrame()
 		record_start_period = None
 		record_end_period = None
 		number_of_crawls = 0
 		file_name = 'daily_climate/data_{}.csv'.format(station_id)
+		# 是否擷取到任何此觀測站的氣候資料
+		is_catch_any_data = False
 
 		for period in periods:
 			daily_climate_url = self.climate_station.get_daily_full_url(period, station_id)
-			temp_df = self.catch_climate_data(daily_climate_url)
+			climate_df = self.catch_climate_data(daily_climate_url)
 
 			# 如果沒有任何資料就不儲存
-			if temp_df is None:
+			if climate_df is None:
 				print(period, station_id, station_area, 'None')
 				continue
 
-			temp_df = self.data_preprocess(temp_df, period, station_area, filter_period)
+			climate_df = self.data_preprocess(climate_df, period, station_area, filter_period)
 
 			# 過濾資料後，如果沒有任何資料就不儲存
-			if temp_df.empty:
+			if climate_df.empty:
 				print(period, station_id, station_area, 'filter None')
 				continue
 
 			# 記錄爬蟲 log
 			if number_of_crawls == 0:
-				record_start_period = self.record_crawler_log_start_period(temp_df)
-				csv_process.to_csv(temp_df, file_name)
+				is_catch_any_data = True
+				record_start_period = self.record_crawler_log_start_period(climate_df)
+				csv_process.to_csv(climate_df, file_name)
 
 			if number_of_crawls > 0:
-				csv_process.to_csv(temp_df, file_name, mode='a', header=False)
+				csv_process.to_csv(climate_df, file_name, mode='a', header=False)
 
 			number_of_crawls += 1
-			record_end_period = self.record_crawler_log_end_period(temp_df)
+			record_end_period = self.record_crawler_log_end_period(climate_df)
 
-			logging.info('{} daily {}'.format(station_area, period))
+			self.save_data_to_db(climate_df)
+			logging.info('{} {} daily {}'.format(station_id, station_area, period))
 
-			climate_df = pd.concat([climate_df, temp_df], ignore_index=True)
 			print(period, station_id, station_area, 'record: {} ~ {}'.format(record_start_period, record_end_period))
 
-		if climate_df.empty:
+		if not is_catch_any_data:
 			csv_process.delete_csv(file_name)
 			record_start_period = None
 			record_end_period = None
@@ -83,23 +87,25 @@ class Daily_Climate_Crawler:
 
 	# period 是否與 filter_period 同年同月份
 	# filter_period 就是 start_period
-	def filter_out_duplicate_data(self, df, filter_period):
+	def filter_out_duplicate_data(self, dataSet, filter_period):
 		# 只留需要的日期區間
 		period_month_end = (pd.Timestamp(filter_period) + pd.offsets.MonthEnd(0)).strftime('%Y-%m-%d')
 		print('filter: {} ~ {}'.format(filter_period, period_month_end))
-		maskTime = df['Reporttime'].between(filter_period, period_month_end)
-		temp_df = df[maskTime]
-		return temp_df
+		maskTime = dataSet['Reporttime'].between(filter_period, period_month_end)
+		return dataSet[maskTime]
 
 	# 記錄爬蟲 log 之起始時間 (第一筆的 Reporttime)
-	def record_crawler_log_start_period(self, df):
-		record_start_period = df.iloc[0]['Reporttime']
+	def record_crawler_log_start_period(self, dataSet):
+		record_start_period = dataSet.iloc[0]['Reporttime']
 		return record_start_period
 
 	# 記錄爬蟲 log 之終止時間 (最後一筆的 Reporttime)
-	def record_crawler_log_end_period(self, df):
-		record_end_period = df.iloc[-1]['Reporttime']
+	def record_crawler_log_end_period(self, dataSet):
+		record_end_period = dataSet.iloc[-1]['Reporttime']
 		return record_end_period
+
+	def save_data_to_db(self, dataSet):
+		self.to_mssql.to_sql(dataSet, self.db_table_name, if_exists='append')
 
 	def catch_climate_data(self, url):
 		req = Request.get(url)

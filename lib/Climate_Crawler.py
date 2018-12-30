@@ -21,8 +21,8 @@ class Climate_Crawler:
 		self.climate_station = Climate_Station()
 		self.station_df = self.climate_station.station_df
 
-		self.daily_crawler = Daily_Climate_Crawler(self.climate_station)
-		self.hourly_crawler = Hourly_Climate_Crawler(self.climate_station)
+		self.daily_crawler = Daily_Climate_Crawler(self.climate_station, self.to_mssql)
+		self.hourly_crawler = Hourly_Climate_Crawler(self.climate_station, self.to_mssql)
 
 		self.recent_climate_data_daily_start_period = Climate_Common.get_recent_climate_data_start_period()[:-3]
 		self.recent_climate_data_hourly_start_period = Climate_Common.get_recent_climate_data_start_period()
@@ -53,8 +53,7 @@ class Climate_Crawler:
 		is_merge_daily_climate, is_merge_hourly_climate = merge_climate_data_to_csv()
 		print('daily_climate merge Success:', is_merge_daily_climate)
 		print('hourly_climate merge Success:', is_merge_hourly_climate)
-		# 儲存 日 和 小時 氣候資料
-		self.to_mssql.save_daily_and_hourly_data()
+
 		# 關閉資料庫連線
 		self.to_mssql.disconnect()
 
