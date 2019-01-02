@@ -10,6 +10,7 @@ from lib.Hourly_Climate_Crawler import Hourly_Climate_Crawler
 from lib.db.csv_to_sql import csv_to_mssql
 from lib.Climate_Crawler_Log import Climate_Crawler_Log
 from lib.csv.csv_process import merge_climate_data_to_csv
+from lib.Logging import Logging
 
 class Climate_Crawler:
 	def __init__(self):
@@ -27,8 +28,7 @@ class Climate_Crawler:
 		self.recent_climate_data_daily_start_period = Climate_Common.get_recent_climate_data_start_period()[:-3]
 		self.recent_climate_data_hourly_start_period = Climate_Common.get_recent_climate_data_start_period()
 
-		FORMAT = '%(asctime)s %(levelname)s: %(message)s'
-		logging.basicConfig(handlers=[logging.FileHandler('data/crawler.log', 'w', 'utf-8')], format=FORMAT, level=logging.INFO)
+		Logging().setting()
 
 	def start(self):
 		if not self.log_df.empty and self.is_latest_data():
@@ -37,17 +37,21 @@ class Climate_Crawler:
 
 		print('\n# init log_df:')
 		print(self.log_df, '\n')
+
 		# 擷取氣候資料
 		self.log_df = self.get_climate_data(self.log_df)
 		print('\n# get_climate_data:')
 		print(self.log_df)
+
 		# 更新爬蟲 log dataFrame
 		self.log_df = self.climate_crawler_Log.update_log_dataFrame(self.log_df)
 		print('\n# update_log_dataFrame:')
 		print(self.log_df)
+
 		# 儲存爬蟲 log
 		self.climate_crawler_Log.save_log(self.log_df)
 		print('')
+
 		# 合併氣候資料
 		# return: 合併氣候資料是否成功 (type: bool)
 		is_merge_daily_climate, is_merge_hourly_climate = merge_climate_data_to_csv()
