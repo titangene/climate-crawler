@@ -13,7 +13,7 @@ class Hourly_Climate_Crawler:
 	def __init__(self, climate_station, to_mssql):
 		self.climate_station = climate_station
 		self.to_mssql = to_mssql
-		self.db_table_name = 'Config().get_database_table_name_for_climate_hourly_data()'
+		self.db_table_name = Config().get_database_table_name_for_climate_hourly_data()
 		self.reserved_columns = ['Temperature', 'Humidity', 'SunShine_hr', 'SunShine_MJ']
 
 	def get_station_climate_data(self, station_id, periods):
