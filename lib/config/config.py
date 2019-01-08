@@ -69,3 +69,42 @@ class Config:
 
 	def get_database_table_name_for_crawler_log(self):
 		return self.config['database_table_name']['crawler_log']
+
+	# 取得 一個 URL 重新發 request 的最高次數限制
+	def get_re_request_max_count(self):
+		re_request_max_count = self.config['crawler']['re_request_max_count']
+
+		# 所有字元必須是數字，也就是必須是整數，不能有非數字的字元 (例如：小數點)
+		if not re_request_max_count.isdigit():
+			raise ValueError('config.ini 內的 [crawler] re_request_max_count 變數必須是整數且 >= 2')
+
+		if int(re_request_max_count) >= 2:
+			return int(re_request_max_count)
+		else:
+			raise ValueError('config.ini 內的 [crawler] re_request_max_count 變數必須是整數且 >= 2')
+
+	# 取得 URL 重新發 request 的 sleep 時間間隔
+	def get_re_request_sleep_time(self):
+		re_request_sleep_time = self.config['crawler']['re_request_sleep_time']
+
+		# 所有字元必須是數字，也就是必須是整數，不能有非數字的字元 (例如：小數點)
+		if not re_request_sleep_time.isdigit():
+			raise ValueError('config.ini 內的 [crawler] re_request_sleep_time 變數必須是整數且 >= 1')
+
+		if int(re_request_sleep_time) >= 1:
+			return int(re_request_sleep_time)
+		else:
+			raise ValueError('config.ini 內的 [crawler] re_request_sleep_time 變數必須是整數且 >= 1')
+
+	# 取得 每個 request 之間的 sleep 時間間隔
+	def get_pre_request_sleep_time(self):
+		pre_request_sleep_time = self.config['crawler']['pre_request_sleep_time']
+
+		# 所有字元必須是數字，也就是必須是整數，不能有非數字的字元 (例如：小數點)
+		if not pre_request_sleep_time.isdigit():
+			raise ValueError('config.ini 內的 [crawler] pre_request_sleep_time 變數必須是整數且 >= 1')
+
+		if int(pre_request_sleep_time) >= 1:
+			return int(pre_request_sleep_time)
+		else:
+			raise ValueError('config.ini 內的 [crawler] pre_request_sleep_time 變數必須是整數且 >= 1')
