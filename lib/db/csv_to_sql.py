@@ -1,3 +1,5 @@
+import logging
+
 from sqlalchemy import create_engine
 from pandas.io.sql import SQLDatabase, SQLTable
 import pandas as pd
@@ -29,7 +31,7 @@ class csv_to_mssql:
 			result = e
 		else:
 			result = '{} ({}): OKAY'.format(table_name, if_exists)
-		print('to_sql:', result)
+		logging.info('to_sql: {}'.format(result))
 
 	# DataFrame.to_sql() 自訂版
 	# 可自訂 primary key 和 not null
