@@ -75,8 +75,10 @@ class Hourly_Climate_Crawler:
 		req = Request.get(url)
 		soup = BeautifulSoup(req.text, 'lxml')
 
-		data_info = soup.find(class_='imp').text
-		if data_info == '本段時間區間內無觀測資料。':
+		# 若 <label class="imp"> 此 element 的文字為 '本段時間區間內無觀測資料。' 時，
+		# 就代表 CWB 還未將氣候資料上傳至平台
+		data_info = soup.find(class_='imp', text='本段時間區間內無觀測資料。')
+		if self.CWB_did_not_upload_data(data_info):
 			return None
 
 		# 保留欄位德 index
@@ -101,6 +103,9 @@ class Hourly_Climate_Crawler:
 		# 將 Hour 欄位原本的 1 ~ 24 改成 '00' ~ '23'
 		climate_df['Hour'] = list(map(self.set_hour_str(), list(climate_df['Hour'])))
 		return climate_df
+
+	def CWB_did_not_upload_data(self, data_info):
+		return data_info is not None and data_info.text == '本段時間區間內無觀測資料。'
 
 	def save_data_to_db(self, dataSet):
 		self.to_mssql.to_sql(dataSet, self.db_table_name, if_exists='append')
