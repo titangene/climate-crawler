@@ -18,13 +18,13 @@ def get(url):
 	config = Config()
 	re_request_max_count = config.get_re_request_max_count()
 	re_request_sleep_time = config.get_re_request_sleep_time()
-	pre_request_sleep_time = config.get_pre_request_sleep_time()
+	per_request_sleep_time = config.get_per_request_sleep_time()
 
 	while is_ok_status == False:
 		try:
 			user_agent = set_header_user_agent()
 			response = requests.get(url, headers={'user-agent': user_agent})
-			time.sleep(pre_request_sleep_time)
+			time.sleep(per_request_sleep_time)
 			logging.info('response status code ({}) for url: {} | header.user-agent={}'.format(response.status_code, url, user_agent))
 			# 若 response 不是 200 就會拋出錯誤
 			response.raise_for_status()

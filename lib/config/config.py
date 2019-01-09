@@ -97,14 +97,14 @@ class Config:
 			raise ValueError('config.ini 內的 [crawler] re_request_sleep_time 變數必須是整數且 >= 1')
 
 	# 取得 每個 request 之間的 sleep 時間間隔
-	def get_pre_request_sleep_time(self):
-		pre_request_sleep_time = self.config['crawler']['pre_request_sleep_time']
+	def get_per_request_sleep_time(self):
+		per_request_sleep_time = self.config['crawler']['per_request_sleep_time']
 
 		# 所有字元必須是數字，也就是必須是整數，不能有非數字的字元 (例如：小數點)
-		if not pre_request_sleep_time.isdigit():
-			raise ValueError('config.ini 內的 [crawler] pre_request_sleep_time 變數必須是整數且 >= 1')
+		if not per_request_sleep_time.isdigit():
+			raise ValueError('config.ini 內的 [crawler] per_request_sleep_time 變數必須是整數且 >= 1')
 
-		if int(pre_request_sleep_time) >= 1:
-			return int(pre_request_sleep_time)
+		if int(per_request_sleep_time) >= 1:
+			return int(per_request_sleep_time)
 		else:
-			raise ValueError('config.ini 內的 [crawler] pre_request_sleep_time 變數必須是整數且 >= 1')
+			raise ValueError('config.ini 內的 [crawler] per_request_sleep_time 變數必須是整數且 >= 1')
