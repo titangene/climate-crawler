@@ -14,9 +14,12 @@ def set_header_user_agent():
 def get(url):
 	is_ok_status = False
 	re_request_count = 0
-	re_request_max_count = Config().get_re_request_max_count()
-	re_request_sleep_time = Config().get_re_request_sleep_time()
-	pre_request_sleep_time = Config().get_pre_request_sleep_time()
+
+	config = Config()
+	re_request_max_count = config.get_re_request_max_count()
+	re_request_sleep_time = config.get_re_request_sleep_time()
+	pre_request_sleep_time = config.get_pre_request_sleep_time()
+
 	while is_ok_status == False:
 		try:
 			user_agent = set_header_user_agent()
