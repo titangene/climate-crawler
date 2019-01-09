@@ -1,5 +1,6 @@
 import os
 import re
+import logging
 
 import numpy as np
 import pandas as pd
@@ -10,9 +11,9 @@ def createFolder(directory):
 	try:
 		if not os.path.exists(directory):
 			os.makedirs(directory)
-			print('create directory:', directory)
+			logging.info('create directory:', directory)
 	except OSError:
-		print('Error: Creating directory:', directory)
+		logging.exception('Error: Creating directory:', directory)
 
 def get_file_folder_path(file_path):
 	regex_match = re.search(r'data\/?.*\/', file_path)
