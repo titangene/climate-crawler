@@ -102,7 +102,8 @@ class Daily_Climate_Crawler:
 
 	# 記錄爬蟲 log 之終止時間 (最後一筆的 Reporttime)
 	def record_crawler_log_end_period(self, dataSet):
-		record_end_period = dataSet.iloc[-1]['Reporttime']
+		tmp_dataSet = dataSet.dropna(subset=self.reserved_columns, how='all')
+		record_end_period = tmp_dataSet.iloc[-1]['Reporttime']
 		return record_end_period
 
 	def save_data_to_db(self, dataSet):
