@@ -28,7 +28,7 @@ class Daily_Climate_Crawler:
 
 		for period in periods:
 			daily_climate_url = self.climate_station.get_daily_full_url(period, station_id)
-			climate_df = self.catch_climate_data(daily_climate_url)
+			climate_df = self.catch_climate_data(daily_climate_url, period)
 
 			# 如果沒有任何資料就不儲存
 			if climate_df is None:
@@ -109,7 +109,7 @@ class Daily_Climate_Crawler:
 	def save_data_to_db(self, dataSet):
 		self.to_mssql.to_sql(dataSet, self.db_table_name, if_exists='append')
 
-	def catch_climate_data(self, url):
+	def catch_climate_data(self, url, period):
 		req = Request.get(url)
 		soup = BeautifulSoup(req.text, 'lxml')
 
@@ -119,21 +119,42 @@ class Daily_Climate_Crawler:
 		if self.CWB_did_not_upload_data(data_info):
 			return None
 
+		climate_table = soup.find(id='MyTable')
+		climate_df = pd.read_html(str(climate_table))[0]
+
 		# 保留欄位德 index
 		reserved_columns_index = [0, 7, 8, 10, 13, 27, 29]
 		# return: {0: 'Day', 7: 'Temperature', 8: 'Max_T', ... }
 		rename_columns = dict(zip(reserved_columns_index, ['Day'] + self.reserved_columns))
 
-		# iloc[3:, reserved_columns_index] 中的 '3:' 是刪除前 3 列 (index: 0 ~ 2)
-		# 將資料內的 '/' 和 'X' 設為 NA
-		# 只要 subset 這些欄位全部都 NA 才 drop
-		climate_table = soup.find(id='MyTable')
-		climate_df = pd.read_html(str(climate_table))[0]\
-						.iloc[3:, reserved_columns_index]\
-						.rename(columns=rename_columns)\
-						.replace('/', np.nan)\
-						.replace('X', np.nan)\
-						.replace('...', np.nan)
+		# 原始資料的所有欄位名稱，不包含日期那欄
+		source_date_column_name = 1
+		source_column_without_date = climate_df.columns[source_date_column_name:]
+
+		# 將資料內的 '/', X', '...' 設為 NA
+		climate_df = climate_df.replace('/', np.nan)\
+							   .replace('X', np.nan)\
+							   .replace('...', np.nan)
+
+		yesterday = Climate_Common.get_yesterday_date_str()
+		if self.is_same_year_month(period, yesterday):
+			# e.g. 將 '2018-10-05' 變成 '05'，只取日
+			yesterday_day = yesterday[-2:]
+			# 原始資料的欄位名稱最後一列的 index
+			source_column_name_end_index = 2
+			# 昨天的資料列 index
+			yesterday_index = int(yesterday_day) + source_column_name_end_index
+			# 第一筆的資料列 index
+			source_first_data_row_index = 3
+			# 過濾掉未來時段的資料列
+			climate_df = climate_df.loc[source_first_data_row_index: yesterday_index]
+
+		# 1. 只要 subset 這些欄位全部都 NA 才 drop 該列
+		# 2. 只保留 reserved_columns_index 這些欄位
+		# 3. 欄位重新命名
+		climate_df = climate_df.dropna(subset=source_column_without_date, how='all')\
+							   [reserved_columns_index]\
+							   .rename(columns=rename_columns)
 
 		if climate_df.empty:
 			return None
