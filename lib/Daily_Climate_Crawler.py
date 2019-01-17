@@ -23,7 +23,6 @@ class Daily_Climate_Crawler:
 		record_end_period = None
 		number_of_crawls = 0
 		merge_file_name = 'daily_climate_data.csv'
-		file_name = 'daily_climate/data_{}.csv'.format(station_id)
 		# 是否擷取到任何此觀測站的氣候資料
 		is_catch_any_data = False
 
@@ -47,10 +46,10 @@ class Daily_Climate_Crawler:
 			if number_of_crawls == 0:
 				is_catch_any_data = True
 				record_start_period = self.record_crawler_log_start_period(climate_df)
-				csv_process.to_csv(climate_df, file_name)
+				csv_process.save_daily_climate_data_to_csv(climate_df, station_id)
 
 			if number_of_crawls > 0:
-				csv_process.to_csv(climate_df, file_name, mode='a', header=False)
+				csv_process.save_daily_climate_data_to_csv(climate_df, station_id, mode='a', header=False)
 
 			number_of_crawls += 1
 			record_end_period = self.record_crawler_log_end_period(climate_df)

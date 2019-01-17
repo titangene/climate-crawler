@@ -75,3 +75,11 @@ def delete_csv(csv_name):
 		os.remove(file_path)
 	else:
 		print("The {} file does not exist".format(file_path))
+
+def save_daily_climate_data_to_csv(dataSet, station_id, mode='w', header=True):
+	station_file_name = 'daily_climate/data_{}.csv'.format(station_id)
+	to_csv(dataSet, station_file_name, mode=mode, header=header)
+
+def save_hourly_climate_data_to_csv(dataSet, station_id, mode='w', header=True):
+	station_file_name = 'hourly_climate/data_{}.csv'.format(station_id)
+	to_csv(dataSet, station_file_name, mode=mode, header=header)
