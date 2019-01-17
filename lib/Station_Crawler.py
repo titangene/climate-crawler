@@ -52,5 +52,5 @@ class Station_Crawler:
 		return station_df
 
 	def save_df_to_csv(self, station_df):
-		csv_process.to_csv(station_df, 'climate_station.csv', backup=True)
+		csv_process.to_csv(station_df, 'climate_station.csv', backup=True, print=True)
 		print('update: climate station')

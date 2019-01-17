@@ -82,18 +82,19 @@ class Daily_Climate_Crawler:
 		df = df.drop(['Day'], axis=1)\
 			   .reindex(new_index, axis=1)
 
+		# filter_period 就是 start_period
 		if self.is_same_year_month(period, filter_period):
 			df = self.filter_out_duplicate_data(df, filter_period)
 
 		return df
 
 	# period 是否與 filter_period 同年同月份
-	# filter_period 就是 start_period
+	# period 格式：'YYYY-mm'
+	# filter_period格式：'YYYY-mm-dd'
 	def is_same_year_month(self, period, filter_period):
 		return filter_period and period == filter_period[:-3]
 
-	# period 是否與 filter_period 同年同月份
-	# filter_period 就是 start_period
+	# 不保留包含以前爬到的資料，只保留不重複的資料，利用 filter_period 來過濾
 	def filter_out_duplicate_data(self, dataSet, filter_period):
 		# 只留需要的日期區間
 		period_month_end = (pd.Timestamp(filter_period) + pd.offsets.MonthEnd(0)).strftime('%Y-%m-%d')

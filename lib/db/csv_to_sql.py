@@ -29,9 +29,10 @@ class csv_to_mssql:
 				dataSet.to_sql(table_name, self.sql_engine, if_exists=if_exists, index=False, dtype=dtype)
 		except Exception as e:
 			result = e
+			logging.exception('to_sql: {}'.format(result))
 		else:
 			result = '{} ({}): OKAY'.format(table_name, if_exists)
-		logging.info('to_sql: {}'.format(result))
+			logging.info('to_sql: {}'.format(result))
 
 	# DataFrame.to_sql() 自訂版
 	# 可自訂 primary key 和 not null
