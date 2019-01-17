@@ -1,6 +1,7 @@
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
 import numpy as np
+from pandas.tseries.offsets import MonthEnd
 
 from lib.Station_Crawler import Station_Crawler
 from lib.Climate_Crawler import Climate_Crawler
@@ -48,9 +49,9 @@ def simulation_with_crawler_log(to_mssql):
 		'Station_Area': ['新北市-板橋', '新北市-淡水'],
 		'Reporttime':  [today_time, today_time],
 		'Daily_Start_Period': ['2018-10-22', '2018-10-22'],
-		'Daily_End_Period': [a_few_days_ago(month=1, day=3), a_few_days_ago(day=3)],
+		'Daily_End_Period': [late_last_month(), a_few_days_ago(day=3)],
 		'Hourly_Start_Period': ['2018-10-22', '2018-10-22'],
-		'Hourly_End_Period': [a_few_days_ago(day=2), a_few_days_ago(day=3)]
+		'Hourly_End_Period': [a_few_days_ago(day=3), a_few_days_ago(day=3)]
 	})
 	climate_crawler_Log = Climate_Crawler_Log(to_mssql)
 	climate_crawler_Log.save_log(log_df)
@@ -99,6 +100,10 @@ def clear_db_climate_log(sql_engine):
 	session.commit()
 	session.close()
 	print('TRUNCATE TABLE: climate_crawler_log --> OKAY')
+
+def late_last_month(day=2, month=0):
+	today_time = pd.Timestamp.now()
+	return (today_time - MonthEnd(1) - pd.DateOffset(day)).strftime('%Y-%m-%d')
 
 def a_few_days_ago(day, month=0):
 	today_time = pd.Timestamp.now()
