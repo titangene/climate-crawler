@@ -24,8 +24,8 @@ class Climate_Crawler:
 		self.climate_station = Climate_Station()
 		self.station_df = self.climate_station.station_df
 
-		self.daily_crawler = Daily_Climate_Crawler(self.climate_station, self.to_mssql)
-		self.hourly_crawler = Hourly_Climate_Crawler(self.climate_station, self.to_mssql)
+		self.daily_crawler = Daily_Climate_Crawler(self.climate_station, self.to_mssql, self.climate_crawler_Log)
+		self.hourly_crawler = Hourly_Climate_Crawler(self.climate_station, self.to_mssql, self.climate_crawler_Log)
 
 		self.overwrite_previous_data()
 
@@ -61,7 +61,7 @@ class Climate_Crawler:
 		print(self.log_df, '\n')
 
 		# 擷取氣候資料
-		self.log_df = self.get_climate_data(self.log_df)
+		self.get_climate_data(self.log_df)
 		print('\n# get_climate_data:')
 		print(self.log_df)
 
@@ -71,8 +71,8 @@ class Climate_Crawler:
 		print(self.log_df)
 
 		# 儲存爬蟲 log
-		self.climate_crawler_Log.save_log(self.log_df)
-		print('')
+		# self.climate_crawler_Log.save_log(self.log_df)
+		# print('')
 
 		# 合併氣候資料
 		# return: 合併氣候資料是否成功 (type: bool)
@@ -99,19 +99,18 @@ class Climate_Crawler:
 				temp_row = log_df.loc[station_id]
 				print('old last daily:', temp_row['Daily_End_Period'], '| old last hourly:', temp_row['Hourly_End_Period'])
 				# 擷取最新的氣候資料
-				temp_row = self.get_latest_climate_data(temp_row, station_id)
+				self.log_df = self.get_latest_climate_data(temp_row, station_id)
 			else:
 				print('# without crawler log:', station_id, row['station_area'], '==================')
 				station_area = row['station_area']
 				# 擷取近期的氣候資料
-				temp_row = self.get_recent_climate_data(station_id, station_area)
+				self.log_df = self.get_recent_climate_data(station_id, station_area)
 
-			if temp_row is not None:
-				log_df.loc[station_id] = temp_row
+			# if temp_row is not None:
+			# 	log_df.loc[station_id] = temp_row
 			print('\n# log_df:')
-			print(log_df)
+			print(self.log_df)
 			print('\n===============================\n')
-		return log_df
 
 	# 擷取最新的氣候資料：
 	# 擷取爬蟲 log 紀錄之後所要擷取的新氣候資料
@@ -134,35 +133,16 @@ class Climate_Crawler:
 		print('filter period:', filter_period)
 
 		# 擷取氣候資料
-		daily_record_start_period, daily_record_end_period = \
-				self.daily_crawler.get_station_climate_data(station_id, daily_periods, filter_period)
-		hourly_record_start_period, hourly_record_end_period = \
-				self.hourly_crawler.get_station_climate_data(station_id, hourly_periods)
-		print('record daily crawler: {} ~ {}'.format(daily_record_start_period, daily_record_end_period))
-		print('record hourly crawler: {} ~ {}\n'.format(hourly_record_start_period, hourly_record_end_period))
+		self.log_df = self.daily_crawler.get_station_climate_data(station_id, daily_periods,
+				self.log_df, self.backup_timestamp, filter_period)
+		self.log_df = self.hourly_crawler.get_station_climate_data(station_id, hourly_periods,
+				self.log_df, self.backup_timestamp)
 
-		is_daily_record_period = self.is_record_period(daily_record_start_period, daily_record_end_period)
-		is_hourly_record_period = self.is_record_period(hourly_record_start_period, hourly_record_end_period)
-		print('is_daily_record_period:', is_daily_record_period)
-		print('is_hourly_record_period:', is_hourly_record_period)
-
-		if is_daily_record_period:
-			temp_row['New_Daily_Start_Period'] = daily_record_start_period
-			temp_row['New_Daily_End_Period'] = daily_record_end_period
-
-		if is_hourly_record_period:
-			temp_row['New_Hourly_Start_Period'] = hourly_record_start_period
-			temp_row['New_Hourly_End_Period'] = hourly_record_end_period
-
-		if is_daily_record_period or is_hourly_record_period:
-			temp_row['Reporttime'] = pd.Timestamp.now()
-
-		return temp_row
+		return self.log_df
 
 	# 擷取近期的氣候資料：
 	# 依據 config.ini 內自訂的起始要擷取的資料時段變數，以設定要擷取的資料時段
 	def get_recent_climate_data(self, station_id, station_area):
-		print('如果 DB 為空，需要擷取 三年前 2015-1-1 ~ 該天的昨天 期間的所有氣候資料')
 		yesterday_str = Climate_Common.get_yesterday_date_str()
 
 		daily_start_period = self.recent_climate_data_daily_start_period
@@ -177,35 +157,35 @@ class Climate_Crawler:
 		print('hourly periods:', hourly_periods)
 
 		# 擷取氣候資料
-		daily_record_start_period, daily_record_end_period = \
-				self.daily_crawler.get_station_climate_data(station_id, daily_periods)
-		hourly_record_start_period, hourly_record_end_period = \
-				self.hourly_crawler.get_station_climate_data(station_id, hourly_periods)
-		print('record daily crawler: {} ~ {}'.format(daily_record_start_period, daily_record_end_period))
-		print('record hourly crawler: {} ~ {}\n'.format(hourly_record_start_period, hourly_record_end_period))
+		self.log_df = self.daily_crawler.get_station_climate_data(station_id, daily_periods,
+				self.log_df, self.backup_timestamp)
+		self.log_df = self.hourly_crawler.get_station_climate_data(station_id, hourly_periods,
+				self.log_df, self.backup_timestamp)
+		# print('record daily crawler: {} ~ {}'.format(daily_record_start_period, daily_record_end_period))
+		# print('record hourly crawler: {} ~ {}\n'.format(hourly_record_start_period, hourly_record_end_period))
 
-		is_daily_record_period = self.is_record_period(daily_record_start_period, daily_record_end_period)
-		is_hourly_record_period = self.is_record_period(hourly_record_start_period, hourly_record_end_period)
-		print('is_daily_record_period:', is_daily_record_period)
-		print('is_hourly_record_period:', is_hourly_record_period)
+		# is_daily_record_period = self.is_record_period(daily_record_start_period, daily_record_end_period)
+		# is_hourly_record_period = self.is_record_period(hourly_record_start_period, hourly_record_end_period)
+		# print('is_daily_record_period:', is_daily_record_period)
+		# print('is_hourly_record_period:', is_hourly_record_period)
 
-		if not is_daily_record_period and not is_hourly_record_period:
-			return None
+		# if not is_daily_record_period and not is_hourly_record_period:
+		# 	return None
 
-		temp_row_dict = {
-			'Station_Area': station_area,
-			'Reporttime': pd.Timestamp.now(),
-			'Daily_Start_Period': np.nan,
-			'Daily_End_Period': np.nan,
-			'Hourly_Start_Period': np.nan,
-			'Hourly_End_Period': np.nan,
-			'New_Daily_Start_Period': daily_record_start_period,
-			'New_Daily_End_Period': daily_record_end_period,
-			'New_Hourly_Start_Period': hourly_record_start_period,
-			'New_Hourly_End_Period': hourly_record_end_period
-		}
-		temp_row = pd.Series(temp_row_dict)
-		return temp_row
+		# temp_row_dict = {
+		# 	'Station_Area': station_area,
+		# 	'Reporttime': pd.Timestamp.now(),
+		# 	'Daily_Start_Period': np.nan,
+		# 	'Daily_End_Period': np.nan,
+		# 	'Hourly_Start_Period': np.nan,
+		# 	'Hourly_End_Period': np.nan,
+		# 	'New_Daily_Start_Period': daily_record_start_period,
+		# 	'New_Daily_End_Period': daily_record_end_period,
+		# 	'New_Hourly_Start_Period': hourly_record_start_period,
+		# 	'New_Hourly_End_Period': hourly_record_end_period
+		# }
+		# temp_row = pd.Series(temp_row_dict)
+		return self.log_df
 
 	def is_record_period(self, record_start_period, record_end_period):
 		return record_start_period is not None and record_end_period is not None

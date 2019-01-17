@@ -16,6 +16,10 @@ class Climate_Crawler_Log:
 		self.sql_table = self.set_sql_table()
 		# 取得爬蟲 log dataFrame
 		self.log_df = self.get_log()
+		# 取得歷史爬蟲 log 的所有觀測站
+		self.log_db_history_stations = list(self.log_df['Station_ID'])
+		# 取得目前爬蟲 log 的所有觀測站
+		self.log_current_stations = []
 		# 設定新的 start 和 end period
 		self.log_df = self.set_new_period_columns_in_dataFrame(self.log_df)
 
@@ -71,15 +75,19 @@ class Climate_Crawler_Log:
 		return log_df.set_index('Station_ID')
 
 	def create_empty_log_dataFrame(self):
-			columns = self.sql_columns + self.new_period_columns
-			log_df = pd.DataFrame(columns=columns).set_index('Station_ID')
-			return log_df
+		columns = self.sql_columns + self.new_period_columns
+		log_df = self.log_df.reindex(columns=columns)
+		return log_df.set_index('Station_ID')
 
 	def set_start_period(self, period):
 		if period:
 			return Climate_Common.add_one_day_str(period)
 		else:
 			return Climate_Common.get_recent_climate_data_start_period()
+
+	def add_log_current_stations(self, station_id):
+		if station_id not in self.log_current_stations:
+			self.log_current_stations.append(station_id)
 
 	def save_log(self, log_df):
 		self.to_mssql.to_sql(log_df, self.table_name, if_exists='replace', keys='Station_ID', sql_table=self.sql_table)

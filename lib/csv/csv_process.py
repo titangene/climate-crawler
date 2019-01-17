@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 import logging
 
 import numpy as np
@@ -11,9 +12,9 @@ def createFolder(directory):
 	try:
 		if not os.path.exists(directory):
 			os.makedirs(directory)
-			logging.info('create directory:', directory)
+			logging.info('create directory: {}'.format(directory))
 	except OSError:
-		logging.exception('Error: Creating directory:', directory)
+		logging.exception('Error: Creating directory: {}'.format(directory))
 
 def get_file_folder_path(file_path):
 	regex_match = re.search(r'data\/?.*\/', file_path)
@@ -28,21 +29,21 @@ def load_csv(csv_name):
 	dataSet = pd.read_csv(file_path)
 	return dataSet
 
-def to_csv(dataSet, csv_name, mode='w', header=True, backup=False):
+def to_csv(dataSet, csv_name, mode='w', header=True, backup=False, print_log=False):
 	file_path = set_data_path(csv_name)
 	file_folder_path = get_file_folder_path(file_path)
 	createFolder(file_folder_path)
 	dataSet.to_csv(file_path, encoding='utf-8', index=False, mode=mode, header=header)
-	if mode != 'a':
+	if mode != 'a' and print_log:
 		print('==== The ' + file_path, 'is saved ====')
 	if backup:
 		to_csv_backup(dataSet, csv_name)
 
-def to_csv_backup(dataSet, csv_name):
-	current_time = get_current_time()
-	file_path = 'data/backup/{}_{}'.format(current_time, csv_name)
+def to_csv_backup(dataSet, csv_name, timestamp=get_current_time(), mode='w', header=True):
+	file_path = 'data/backup/{}_{}'.format(timestamp, csv_name)
 	createFolder('data/backup')
-	dataSet.to_csv(file_path, encoding='utf-8', index=False)
+	dataSet.to_csv(file_path, encoding='utf-8', index=False, mode=mode, header=header)
+	logging.info('Backup CSV: {}'.format(file_path))
 
 def merge_csv(merge_folder_path, save_file_name):
 	for dirname, dirnames, filenames in os.walk(merge_folder_path):
@@ -76,6 +77,9 @@ def delete_csv(csv_name):
 	else:
 		print("The {} file does not exist".format(file_path))
 
+def delete_folder(folder):
+	shutil.rmtree(folder)
+
 def save_daily_climate_data_to_csv(dataSet, station_id, mode='w', header=True):
 	station_file_name = 'daily_climate/data_{}.csv'.format(station_id)
 	to_csv(dataSet, station_file_name, mode=mode, header=header)
@@ -83,3 +87,6 @@ def save_daily_climate_data_to_csv(dataSet, station_id, mode='w', header=True):
 def save_hourly_climate_data_to_csv(dataSet, station_id, mode='w', header=True):
 	station_file_name = 'hourly_climate/data_{}.csv'.format(station_id)
 	to_csv(dataSet, station_file_name, mode=mode, header=header)
+
+def save_crawler_log_to_csv(dataSet, print_log=False):
+	to_csv(dataSet, 'climate_crawler_log.csv', print_log=print_log)

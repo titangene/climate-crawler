@@ -10,13 +10,14 @@ import lib.Request as Request
 from lib.csv import csv_process
 
 class Daily_Climate_Crawler:
-	def __init__(self, climate_station, to_mssql):
+	def __init__(self, climate_station, to_mssql, climate_crawler_Log):
 		self.climate_station = climate_station
 		self.to_mssql = to_mssql
+		self.climate_crawler_Log = climate_crawler_Log
 		self.db_table_name = Config().get_database_table_name_for_climate_daily_data()
 		self.reserved_columns = ['Temperature', 'Max_T', 'Min_T', 'Humidity', 'SunShine_hr', 'SunShine_MJ']
 
-	def get_station_climate_data(self, station_id, periods, filter_period=None):
+	def get_station_climate_data(self, station_id, periods, log_df, backup_timestamp, filter_period=None):
 		print('---------- daily climate crawler: Start ---------')
 		station_area = self.climate_station.get_station_area(station_id)
 		record_start_period = None
@@ -58,16 +59,17 @@ class Daily_Climate_Crawler:
 			csv_process.to_csv_backup(climate_df, merge_file_name, backup_timestamp, mode='a', header=False)
 
 			self.save_data_to_db(climate_df)
+
+			staton = [station_id, station_area]
+			record_period = [record_start_period, record_end_period]
+			log_df = self.save_log_to_csv(log_df, staton, record_period)
+
 			logging.info('{} {} daily {}'.format(station_id, station_area, period))
 
 			print(period, station_id, station_area, 'record: {} ~ {}'.format(record_start_period, record_end_period))
 
-		if not is_catch_any_data:
-			csv_process.delete_csv(file_name)
-			record_start_period = None
-			record_end_period = None
 		print('---------- daily climate crawler: End -----------')
-		return record_start_period, record_end_period
+		return log_df
 
 	def data_preprocess(self, df, period, station_area, filter_period):
 		df['Reporttime'] = period + '-' + df['Day']
@@ -166,3 +168,36 @@ class Daily_Climate_Crawler:
 
 	def CWB_did_not_upload_data(self, data_info):
 		return data_info is not None and data_info.text == '本段時間區間內無觀測資料。'
+
+	def save_log_to_csv(self, log_df, station, record_period):
+		station_id, station_area = station
+		record_start_period, record_end_period = record_period
+
+		if station_id in log_df.index.values:
+			log_df.at[station_id, 'Reporttime'] = pd.Timestamp.now()
+			log_df.at[station_id, ['Daily_Start_Period', 'Daily_End_Period']] = np.nan
+			log_df.at[station_id, ['New_Daily_Start_Period', 'New_Daily_End_Period']] = record_period
+			log_df = log_df.reset_index()
+		else:
+			log_df = log_df.reset_index()
+			series = pd.Series({
+				'Station_ID': station_id,
+				'Station_Area': station_area,
+				'Reporttime': pd.Timestamp.now(),
+				'Daily_Start_Period': np.nan,
+				'Daily_End_Period': np.nan,
+				'New_Daily_Start_Period': record_start_period,
+				'New_Daily_End_Period': record_end_period
+			})
+			log_df = log_df.append(series, ignore_index=True)
+
+		self.climate_crawler_Log.add_log_current_stations(station_id)
+
+		tmp_log_df = log_df[log_df['Station_ID'].isin(self.climate_crawler_Log.log_current_stations)]\
+					.drop(self.climate_crawler_Log.period_columns, axis=1)\
+					.rename(columns=self.climate_crawler_Log.rename_columns)
+
+		csv_process.save_crawler_log_to_csv(tmp_log_df)
+
+		log_df = log_df.set_index('Station_ID')
+		return log_df
