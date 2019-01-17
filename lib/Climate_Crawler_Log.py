@@ -63,18 +63,23 @@ class Climate_Crawler_Log:
 			return log_df
 
 	def create_new_period_column_in_dataFrame(self, log_df):
-		add_one_day_str = lambda period: Climate_Common.add_one_day_str(period)
 		create_new_period_column_in_dataFrame = Climate_Common.get_yesterday_date_str()
-		log_df['New_Daily_Start_Period'] = log_df['Daily_End_Period'].apply(add_one_day_str)
+		log_df['New_Daily_Start_Period'] = log_df['Daily_End_Period'].apply(self.set_start_period)
 		log_df['New_Daily_End_Period'] = create_new_period_column_in_dataFrame
-		log_df['New_Hourly_Start_Period'] = log_df['Hourly_End_Period'].apply(add_one_day_str)
+		log_df['New_Hourly_Start_Period'] = log_df['Hourly_End_Period'].apply(self.set_start_period)
 		log_df['New_Hourly_End_Period'] = create_new_period_column_in_dataFrame
-		return log_df
+		return log_df.set_index('Station_ID')
 
 	def create_empty_log_dataFrame(self):
-		columns = self.sql_columns + self.new_period_columns
-		log_df = pd.DataFrame(columns=columns).set_index('Station_ID')
-		return log_df
+			columns = self.sql_columns + self.new_period_columns
+			log_df = pd.DataFrame(columns=columns).set_index('Station_ID')
+			return log_df
+
+	def set_start_period(self, period):
+		if period:
+			return Climate_Common.add_one_day_str(period)
+		else:
+			return Climate_Common.get_recent_climate_data_start_period()
 
 	def save_log(self, log_df):
 		self.to_mssql.to_sql(log_df, self.table_name, if_exists='replace', keys='Station_ID', sql_table=self.sql_table)
