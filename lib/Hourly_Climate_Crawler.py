@@ -22,6 +22,7 @@ class Hourly_Climate_Crawler:
 		record_start_period = None
 		record_end_period = None
 		number_of_crawls = 0
+		merge_file_name = 'hourly_climate_data.csv'
 		file_name = 'hourly_climate/data_{}.csv'.format(station_id)
 		# 是否擷取到任何此觀測站的氣候資料
 		is_catch_any_data = False
@@ -47,6 +48,9 @@ class Hourly_Climate_Crawler:
 
 			number_of_crawls += 1
 			record_end_period = period
+
+			csv_process.to_csv(climate_df, merge_file_name, mode='a', header=False)
+			csv_process.to_csv_backup(climate_df, merge_file_name, backup_timestamp, mode='a', header=False)
 
 			self.save_data_to_db(climate_df)
 			logging.info('{} {} hourly {}'.format(station_id, station_area, period))
