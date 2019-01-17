@@ -45,19 +45,22 @@ class Climate_Crawler_Log:
 		has_crawler_log = len(query_result) != 0
 
 		if has_crawler_log:
-			crawler_log_df = pd.DataFrame(query_result, columns=self.sql_columns).set_index('Station_ID')
-			print('\n# DB: \nlast climate crawler log:')
-			print(crawler_log_df)
-			return crawler_log_df
+			crawler_log_df = pd.DataFrame(query_result, columns=self.sql_columns)
+			crawler_log_df['Station_Area'] = crawler_log_df['Station_Area'].apply(lambda x: x.strip())
 		else:
-			return None
+			crawler_log_df = pd.DataFrame(columns=self.sql_columns)
+		print('\n# DB: \nlast climate crawler log:')
+		print(crawler_log_df)
+		return crawler_log_df
 
 	# 設定新的 start 和 end period
 	def set_new_period_columns_in_dataFrame(self, log_df):
-		if self.log_df is None:
-			return self.create_empty_log_dataFrame()
+		if self.log_df.empty:
+			log_df = self.create_empty_log_dataFrame()
+			return log_df
 		else:
-			return self.create_new_period_column_in_dataFrame(log_df)
+			log_df = self.create_new_period_column_in_dataFrame(log_df)
+			return log_df
 
 	def create_new_period_column_in_dataFrame(self, log_df):
 		add_one_day_str = lambda period: Climate_Common.add_one_day_str(period)
