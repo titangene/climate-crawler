@@ -14,6 +14,8 @@ from lib.Logging import Logging
 
 class Climate_Crawler:
 	def __init__(self):
+		self.clear_data_folders()
+
 		self.to_mssql = csv_to_mssql()
 
 		self.climate_crawler_Log = Climate_Crawler_Log(self.to_mssql)
@@ -29,6 +31,13 @@ class Climate_Crawler:
 		self.recent_climate_data_hourly_start_period = Climate_Common.get_recent_climate_data_start_period()
 
 		Logging().setting()
+
+	# 清除之前擷取的氣候資料
+	def clear_data_folders(self):
+		csv_process.delete_folder('data/daily_climate')
+		csv_process.delete_folder('data/hourly_climate')
+		csv_process.createFolder('data/daily_climate')
+		csv_process.createFolder('data/hourly_climate')
 
 	def start(self):
 		if not self.log_df.empty and self.is_latest_data():
