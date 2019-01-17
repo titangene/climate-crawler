@@ -27,6 +27,8 @@ class Climate_Crawler:
 		self.daily_crawler = Daily_Climate_Crawler(self.climate_station, self.to_mssql)
 		self.hourly_crawler = Hourly_Climate_Crawler(self.climate_station, self.to_mssql)
 
+		self.overwrite_previous_data()
+
 		self.recent_climate_data_daily_start_period = Climate_Common.get_recent_climate_data_start_period()[:-3]
 		self.recent_climate_data_hourly_start_period = Climate_Common.get_recent_climate_data_start_period()
 
@@ -38,6 +40,17 @@ class Climate_Crawler:
 		csv_process.delete_folder('data/hourly_climate')
 		csv_process.createFolder('data/daily_climate')
 		csv_process.createFolder('data/hourly_climate')
+
+	# 覆蓋以前的氣候資料，只新增欄位名稱 (之後擷取的氣候資料會用 append 的方式新增)
+	def overwrite_previous_data(self):
+		daily_climate_columns = ['UUID', 'Area'] + self.daily_crawler.reserved_columns + ['Reporttime']
+		hourly_climate_columns = ['UUID', 'Area'] + self.hourly_crawler.reserved_columns + ['Reporttime']
+		daily_climate_df = pd.DataFrame(columns=daily_climate_columns)
+		hourly_climate_df = pd.DataFrame(columns=hourly_climate_columns)
+		csv_process.to_csv(daily_climate_df, 'daily_climate_data.csv')
+		csv_process.to_csv(hourly_climate_df, 'hourly_climate_data.csv')
+		csv_process.to_csv_backup(daily_climate_df, 'daily_climate_data.csv', self.backup_timestamp)
+		csv_process.to_csv_backup(hourly_climate_df, 'hourly_climate_data.csv', self.backup_timestamp)
 
 	def start(self):
 		if not self.log_df.empty and self.is_latest_data():
