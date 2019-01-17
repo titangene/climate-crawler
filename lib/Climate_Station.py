@@ -52,7 +52,7 @@ class Climate_Station:
 		station_location = self.get_station_location(station_id)
 		station_name = self.get_station_name(station_id)
 		station_area = '{}-{}'.format(station_location, station_name)
-		return station_area
+		return station_area.strip()
 
 	# 取得 觀測站名稱 與 所在縣市
 	# e.g. get_station_area('466900')
