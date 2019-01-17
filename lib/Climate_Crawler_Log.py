@@ -1,8 +1,11 @@
+import logging
+
 import pandas as pd
 import numpy as np
 
 from lib.config.config import Config
 import lib.Climate_Common as Climate_Common
+from lib.csv.csv_process import save_crawler_log_to_csv
 
 class Climate_Crawler_Log:
 	def __init__(self, to_mssql):
@@ -12,6 +15,7 @@ class Climate_Crawler_Log:
 		self.period_columns = ['Daily_Start_Period', 'Daily_End_Period', 'Hourly_Start_Period', 'Hourly_End_Period']
 		self.new_period_columns = self.set_new_period_columns()
 		self.sql_columns = ['Station_ID', 'Station_Area', 'Reporttime'] + self.period_columns
+		self.rename_columns = dict(zip(self.new_period_columns, self.period_columns))
 
 		self.sql_table = self.set_sql_table()
 		# 取得爬蟲 log dataFrame
@@ -89,12 +93,41 @@ class Climate_Crawler_Log:
 		if station_id not in self.log_current_stations:
 			self.log_current_stations.append(station_id)
 
+	def add_log_db_history_stations(self, station_id):
+		if station_id not in self.log_db_history_stations:
+			self.log_db_history_stations.append(station_id)
+
 	def save_log(self, log_df):
 		self.to_mssql.to_sql(log_df, self.table_name, if_exists='replace', keys='Station_ID', sql_table=self.sql_table)
 
-	def update_log_dataFrame(self, log_df):
-		rename_columns = dict(zip(self.new_period_columns, self.period_columns))
-		log_df = log_df.drop(self.period_columns, axis=1)\
-				.rename(columns=rename_columns)\
-				.reset_index()
-		return log_df
+	# values 為要更新的值
+	# e.g. values={ 'Hourly_Start_Period': '2019-01-02', 'Hourly_End_Period': '2019-01-05' }
+	def update_log_db(self, station_id, values):
+		statement = self.sql_table.update()\
+				.where(self.sql_table.c.Station_ID == station_id)\
+				.values(**values)\
+				.returning(self.sql_table)
+
+		with self.sql_engine.connect() as conn:
+			try:
+				result = conn.execute(statement).fetchall()[0]
+			except Exception as e:
+				logging.exception('update log db ({}): {}'.format(station_id, e))
+			else:
+				logging.info('update log db ({}): {}'.format(station_id, result))
+
+		return result
+
+	def insert_log_db(self, values):
+		statement = self.sql_table.insert().values(**values)
+
+		with self.sql_engine.connect() as conn:
+			try:
+				result = conn.execute(statement)
+			except Exception as e:
+				logging.exception('insert log db ({}): {}'.format(values['Station_ID'], e))
+			else:
+				logging.info('insert log db ({}): {}'.format(values['Station_ID'], result))
+
+	def is_insert_new_log(self, station_id):
+		return station_id in self.log_db_history_stations

@@ -57,6 +57,7 @@ class Hourly_Climate_Crawler:
 			staton = [station_id, station_area]
 			record_period = [record_start_period, record_end_period]
 			log_df = self.save_log_to_csv(log_df, staton, record_period)
+			self.save_log_to_db(staton, record_period)
 
 			logging.info('{} {} hourly {}'.format(station_id, station_area, period))
 
@@ -148,5 +149,25 @@ class Hourly_Climate_Crawler:
 		log_df = log_df.set_index('Station_ID')
 		return log_df
 
+	def save_log_to_db(self, station, record_period):
+		station_id, station_area = station
+		record_start_period, record_end_period = record_period
+
+		if self.climate_crawler_Log.is_insert_new_log(station_id):
+			update_values = {
+				'Hourly_Start_Period': record_start_period,
+				'Hourly_End_Period': record_end_period
+			}
+			self.climate_crawler_Log.update_log_db(station_id, update_values)
+		else:
+			insert_values = {
+				'Station_ID': station_id,
+				'Station_Area': station_area,
+				'Reporttime': pd.Timestamp.now(),
+				'Hourly_Start_Period': record_start_period,
+				'Hourly_End_Period': record_end_period
+			}
+			self.climate_crawler_Log.insert_log_db(insert_values)
+			self.climate_crawler_Log.add_log_db_history_stations(station_id)
 	def set_hour_str(self):
 		return lambda hour: str(int(hour) - 1).zfill(2)
