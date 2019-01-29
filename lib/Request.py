@@ -2,7 +2,7 @@ import time
 import logging
 
 import requests
-from requests.exceptions import HTTPError
+from requests.exceptions import HTTPError, RequestException
 from fake_useragent import UserAgent
 
 from lib.config.config import Config
@@ -29,7 +29,7 @@ def get(url):
 			# 若 response 不是 200 就會拋出錯誤
 			response.raise_for_status()
 			is_ok_status = True
-		except HTTPError as e:
+		except RequestException as e:
 			logging.exception(e)
 			# 休息幾秒後重新發 request
 			time.sleep(re_request_sleep_time)
