@@ -138,6 +138,9 @@ class Daily_Climate_Crawler:
 		source_date_column_name = 1
 		source_column_without_date = climate_df.columns[source_date_column_name:]
 
+		# 第一筆的資料列 index
+		source_first_data_row_index = 3
+
 		# 將資料內的 '/', X', '...' 設為 NA
 		climate_df = climate_df.replace('/', np.nan)\
 							   .replace('X', np.nan)\
@@ -151,16 +154,15 @@ class Daily_Climate_Crawler:
 			source_column_name_end_index = 2
 			# 昨天的資料列 index
 			yesterday_index = int(yesterday_day) + source_column_name_end_index
-			# 第一筆的資料列 index
-			source_first_data_row_index = 3
 			# 過濾掉未來時段的資料列
 			climate_df = climate_df.loc[source_first_data_row_index: yesterday_index]
 
 		# 1. 只要 subset 這些欄位全部都 NA 才 drop 該列
-		# 2. 只保留 reserved_columns_index 這些欄位
+		# 2. 只保留第一筆的資料列之後的資料 (在這之前都是原始資料的資料欄位名稱)，
+		#    以及保留 reserved_columns_index 這些欄位的資料
 		# 3. 欄位重新命名
 		climate_df = climate_df.dropna(subset=source_column_without_date, how='all')\
-							   [reserved_columns_index]\
+							   .loc[source_first_data_row_index:, reserved_columns_index]\
 							   .rename(columns=rename_columns)
 
 		if climate_df.empty:
