@@ -112,8 +112,8 @@ class Climate_Crawler:
 		# 取得要擷取的資料時段 (包括天、小時)
 		daily_periods = Climate_Common.get_month_periods(daily_start_period, daily_end_period)
 		hourly_periods = Climate_Common.get_day_periods(hourly_start_period, hourly_end_period)
-		print('daily periods:', daily_periods)
-		print('hourly periods:', hourly_periods)
+		print('daily periods: {} ~ {}'.format(daily_periods[0], daily_periods[-1]))
+		print('hourly periods: {} ~ {}'.format(hourly_periods[0], hourly_periods[-1]))
 
 		filter_period = temp_row['New_Daily_Start_Period']
 		print('filter period:', filter_period)
@@ -139,8 +139,8 @@ class Climate_Crawler:
 		# 取得要擷取的資料時段 (包括天、小時)
 		daily_periods = Climate_Common.get_month_periods(daily_start_period, daily_end_period)
 		hourly_periods = Climate_Common.get_day_periods(hourly_start_period, hourly_end_period)
-		print('daily periods:', daily_periods)
-		print('hourly periods:', hourly_periods)
+		print('daily periods: {} ~ {}'.format(daily_periods[0], daily_periods[-1]))
+		print('hourly periods: {} ~ {}'.format(hourly_periods[0], hourly_periods[-1]))
 
 		# 擷取氣候資料
 		self.log_df = self.daily_crawler.get_station_climate_data(station_id, daily_periods,

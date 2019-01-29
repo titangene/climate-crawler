@@ -10,8 +10,8 @@ import lib.Request as Request
 class Station_Crawler:
 	def start(self):
 		url = 'http://e-service.cwb.gov.tw/HistoryDataQuery/QueryDataController.do?command=viewMain'
-		req = Request.get(url)
-		soup = BeautifulSoup(req.text, 'html.parser')
+		response = Request.get(url)
+		soup = BeautifulSoup(response.text, 'html.parser')
 
 		js_str = soup.find_all("script")[-1].string
 		js_str = self.parse_js(js_str)

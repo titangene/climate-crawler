@@ -81,8 +81,8 @@ class Hourly_Climate_Crawler:
 		self.to_mssql.to_sql(dataSet, self.db_table_name, if_exists='append')
 
 	def catch_climate_data(self, url):
-		req = Request.get(url)
-		soup = BeautifulSoup(req.text, 'lxml')
+		response = Request.get(url)
+		soup = BeautifulSoup(response.text, 'lxml')
 
 		# 若 <label class="imp"> 此 element 的文字為 '本段時間區間內無觀測資料。' 時，
 		# 就代表 CWB 還未將氣候資料上傳至平台
