@@ -1,8 +1,11 @@
+import logging
+
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
 import numpy as np
 from pandas.tseries.offsets import MonthEnd
 
+from lib.Logging import Logging
 from lib.Station_Crawler import Station_Crawler
 from lib.Climate_Crawler import Climate_Crawler
 
@@ -10,6 +13,7 @@ from lib.Climate_Crawler_Log import Climate_Crawler_Log
 from lib.db.csv_to_sql import csv_to_mssql
 
 def start():
+	Logging().setting()
 	# 更新目前可用的氣候觀測站
 	Station_Crawler().start()
 

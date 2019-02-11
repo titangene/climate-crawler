@@ -1,5 +1,3 @@
-import logging
-
 import pandas as pd
 import numpy as np
 
@@ -10,12 +8,9 @@ from lib.Hourly_Climate_Crawler import Hourly_Climate_Crawler
 from lib.db.csv_to_sql import csv_to_mssql
 from lib.Climate_Crawler_Log import Climate_Crawler_Log
 from lib.csv import csv_process
-from lib.Logging import Logging
 
 class Climate_Crawler:
 	def __init__(self):
-		Logging().setting()
-
 		self.clear_data_folders()
 
 		self.to_mssql = csv_to_mssql()
